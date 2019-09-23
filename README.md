@@ -116,8 +116,9 @@ Use **DP**, **UP**, **DU**, or **UU** for (respectivly) Directed Proportional, U
 wafamole evade --model-type DP wafamole/models/custom/example_models/graph_directed_proportional_sqligot "admin' OR 1=1#"
 ```
 
-## BE CAREFUL!
-This classifier is really strong, it may take a long time (up to 3 hours) for some variants (see Benchmark section).
+**BEFORE LAUNCHING EVALUATION ON SQLiGoT**
+This classifier is really strong, since the feature extraction phase produce vectors with structure and the pre-trained classifiers are strongly regularized.
+It may take a long time (up to 3 hours) for some variants (see Benchmark section) to produce a payload that achieves evasion.
 
 # Benchmark
 
