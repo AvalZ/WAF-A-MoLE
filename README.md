@@ -35,12 +35,12 @@ These are the mutation operators available in the current version of WAF-A-MoLE.
 
 ## Prerequisites
 
-* numpy
-* keras
-* scikit-learn
-* joblib
-* sqlparse
-* networkx
+* [numpy](https://numpy.org/)
+* [keras](https://keras.io/)
+* [scikit-learn](https://scikit-learn.org/stable/)
+* [joblib](https://github.com/joblib/joblib)
+* [sqlparse](https://github.com/andialbrecht/sqlparse)
+* [networkx](https://networkx.github.io/)
 * [Click](https://click.palletsprojects.com/en/7.x/)
 
 ## Setup
@@ -62,34 +62,62 @@ These models are located in [wafamole/models/custom/example_models](https://gith
 
 Available example models
 
-| Classifier |
-| [WafBrain](https://github.com/BBVA/waf-brain) - Recurrent Neural Network | 
-| Token-based - Naive Bayes | 
-| Token-based - Random Forest | 
-| Token-based - Linear SVM | 
-| Token-based - Gaussian SVM | 
-| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Proportional |  
-| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Unproportional |  
-| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Proportional |  
-| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Unproportional |  
+| Classifier name| Algorithm
+| --- | --- |
+| [WafBrain](https://github.com/BBVA/waf-brain) | Recurrent Neural Network| 
+| Token-based | Naive Bayes | 
+| Token-based | Random Forest | 
+| Token-based | Linear SVM | 
+| Token-based | Gaussian SVM | 
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Proportional | Gaussian SVM | 
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Unproportional | Gaussian SVM |
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Proportional | Gaussian SVM |
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Unproportional | Gaussian SVM |
 
+
+#### Token-based - Naive Bayes
+
+Bypass the pre-trained token-based Naive Bayes classifier using a `admin' OR 1=1#` equivalent.
+
+```bash
+wafamole evade --model-type token wafamole/models/custom/example_models/nb_trained.dump  "admin' OR 1=1#"
+```
+
+#### Token-based - Random Forest
+
+Bypass the pre-trained token-based Random Forest classifier using a `admin' OR 1=1#` equivalent.
+
+```bash
+wafamole evade --model-type token wafamole/models/custom/example_models/rf_trained.dump  "admin' OR 1=1#"
+```
 
 #### Token-based - Linear SVM
 
-Bypass a token-based Linear SVM classifier using a `admin' OR 1=1#` equivalent.
+Bypass the pre-trained token-based Linear SVM classifier using a `admin' OR 1=1#` equivalent.
 
 ```bash
 wafamole evade --model-type token wafamole/models/custom/example_models/lin_svm_trained.dump  "admin' OR 1=1#"
 ```
 
+#### Token-based - Gaussian SVM
+
+Bypass the pre-trained token-based Gaussian SVM classifier using a `admin' OR 1=1#` equivalent.
+
+```bash
+wafamole evade --model-type token wafamole/models/custom/example_models/gauss_svm_trained.dump  "admin' OR 1=1#"
+```
+
 #### SQLiGoT
 
+Bypass the pre-trained SQLiGOT classifier using a `admin' OR 1=1#` equivalent.
+Use **DP**, **UP**, **DU**, or **UU** for (respectivly) Directed Proportional, Undirected Proportional, Directed Unproportional and Undirected Unproportional.
 
 ```bash
 wafamole evade --model-type DP wafamole/models/custom/example_models/graph_directed_proportional_sqligot "admin' OR 1=1#"
 ```
 
-BE CAREFUL! This classifier is really strong, it may take a long time (up to 3 hours) for some variants (see Benchmark section).
+## BE CAREFUL!
+This classifier is really strong, it may take a long time (up to 3 hours) for some variants (see Benchmark section).
 
 # Benchmark
 
