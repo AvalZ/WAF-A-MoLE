@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: wafamole
+Version: 0.0.1
+Summary: Fuzzing ML-based WAFs for fun and profit
+Home-page: UNKNOWN
+Author: Valenza, Demetrio
+Author-email: [andrea.valenza | luca.demetrio]@dibris.unige.it
+License: UNKNOWN
+Description: # WAF-A-MoLE
+        
+        A *mutation based fuzzer* inspired by AFL and based on the excellent [FuzzingBook](https://www.fuzzingbook.org) from Andreas Zeller et al.
+        
+        
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown

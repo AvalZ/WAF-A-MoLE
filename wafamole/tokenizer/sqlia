@@ -1,0 +1,2 @@
+select id, name, username from users where id='' or 1=1 union select 1, null, null from users
+select * from users where age = 9 or 3=3 -- -

@@ -1,0 +1,888 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>wafamole.tokenizer.allowed_tokens &#8212; WAF-A-MoLE  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for wafamole.tokenizer.allowed_tokens</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">PUNCTATION_SUB</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;&amp;&amp;&quot;</span><span class="p">,</span> <span class="s2">&quot;AND&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;LT&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&lt;=&quot;</span><span class="p">,</span> <span class="s2">&quot;LTE&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&lt;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;NEQ&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;!=&quot;</span><span class="p">,</span> <span class="s2">&quot;NEQ&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="s2">&quot;EQ&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;GT&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="s2">&quot;GTE&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&lt;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;LSL&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&gt;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;RSL&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&lt;=&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;NULLEQ&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;||&quot;</span><span class="p">,</span> <span class="s2">&quot;OR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;/*&quot;</span><span class="p">,</span> <span class="s2">&quot;CMTST&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;*/&quot;</span><span class="p">,</span> <span class="s2">&quot;CMTEND&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="s2">&quot;TILDE&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;!&quot;</span><span class="p">,</span> <span class="s2">&quot;EXCLAMATION&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">,</span> <span class="s2">&quot;ATR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="s2">&quot;HASH&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;$&quot;</span><span class="p">,</span> <span class="s2">&quot;DOLLAR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">,</span> <span class="s2">&quot;PERCENT&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;^&quot;</span><span class="p">,</span> <span class="s2">&quot;CARET&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">,</span> <span class="s2">&quot;BITAND&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">,</span> <span class="s2">&quot;BITOR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;STAR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot;LPNR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;RPRN&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">,</span> <span class="s2">&quot;RCBR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;}&quot;</span><span class="p">,</span> <span class="s2">&quot;LCBR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;LSQBR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;RSQBR&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;BSLASH&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;COLON&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="s2">&quot;SEMICOLON&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;DQUT&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;SQUOT&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;COMMA&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;PERIOD&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="s2">&quot;QMARK&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;FSLASH&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">SYMBOLS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;ACCESSIBLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ACTION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ADD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ADMIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AFTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AGAINST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AGGREGATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ALGORITHM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ALTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ALWAYS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ANALYZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ANY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ASC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ASCII&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ASENSITIVE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AUDIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AUTHORS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AUTO_INCREMENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AUTOEXTEND_SIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AUTO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AVG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AVG_ROW_LENGTH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BACKUP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BEFORE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BEGIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BETWEEN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BIGINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BINARY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BINLOG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BLOB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BLOCK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BOOL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BOOLEAN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BOTH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BTREE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BYTE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CACHE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CALL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CASCADE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CASCADED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CASE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CATALOG_NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHAIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHANGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHANGED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHAR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHARACTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHARSET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHECK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHECKPOINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHECKSUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CIPHER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CLASS_ORIGIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CLIENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CLIENT_STATISTICS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CLOSE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COALESCE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CODE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLLATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLLATION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMN_NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMNS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMN_ADD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMN_CHECK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMN_CREATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMN_DELETE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COLUMN_GET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMMENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMMIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMMITTED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMPACT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMPLETION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COMPRESSED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONCURRENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONDITION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONNECTION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONSISTENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONSTRAINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONSTRAINT_CATALOG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONSTRAINT_NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONSTRAINT_SCHEMA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONTAINS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONTEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONTINUE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONTRIBUTORS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CONVERT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CPU&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CREATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CROSS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CUBE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURRENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURRENT_DATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURRENT_POS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURRENT_ROLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURRENT_TIME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURRENT_TIMESTAMP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURRENT_USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURSOR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURSOR_NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATABASE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATABASES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATAFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATETIME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DAY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DAY_HOUR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DAY_MICROSECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DAY_MINUTE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DAY_SECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEALLOCATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DECIMAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DECLARE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEFAULT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEFINER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DELAYED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DELAY_KEY_WRITE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DELETE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DESC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DESCRIBE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DES_KEY_FILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DETERMINISTIC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DIAGNOSTICS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DIRECTORY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DISABLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DISCARD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DISK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DISTINCT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DISTINCTROW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DIV&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DOUBLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DROP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DUAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DUMPFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DUPLICATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DYNAMIC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EACH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ELSE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ELSEIF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ENABLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ENCLOSED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;END&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ENDS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ENGINE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ENGINES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ENUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ERROR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ERRORS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ESCAPE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ESCAPED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EVENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EVENTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EVERY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXAMINED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXCHANGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXECUTE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXISTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXPANSION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXPORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXPLAIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXTENDED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXTENT_SIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FALSE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FAILOVER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FAST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FAULTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FETCH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FIELDS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FIRST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FIXED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FLOAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FLOAT4&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FLOAT8&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FLUSH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FOR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FORCE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FOREIGN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FOUND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FROM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FULL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FULLTEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FUNCTION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GENERAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GENERATED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GEOMETRY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GEOMETRYCOLLECTION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GET_FORMAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GLOBAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GOOGLESTATS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GRANT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GRANTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GROUP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HANDLER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HARD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HASH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HAVING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HELP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HIGH_PRIORITY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HOSTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HOUR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HOUR_MICROSECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HOUR_MINUTE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HOUR_SECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ID&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IDENTIFIED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IDLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IGNORE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IGNORE_SERVER_IDS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IMPORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INDEX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INDEXES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INDEX_STATISTICS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INITIAL_SIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INNER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INOUT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INSENSITIVE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INSERT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INSERT_METHOD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INSTALL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INT1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INT2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INT3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INT4&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INT8&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INTEGER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INTERVAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INTO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IO_THREAD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IPC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISOLATION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISSUER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ITERATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INVOKER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JOIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KEY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KEYS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KEY_BLOCK_SIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KILL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LANGUAGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LAST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LAST_VALUE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEADING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEAVE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEAVES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEFT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LESS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LEVEL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LIKE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LIMIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LINEAR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LINES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LINESTRING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LIST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOAD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOCAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOCALTIME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOCALTIMESTAMP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOCK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOCKS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOGFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOGS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LONG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LONGBLOB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LONGTEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOOP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LOW_PRIORITY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_CONNECT_RETRY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_GTID_POS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_HOST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_LOG_FILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_LOG_POS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_PASSWORD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_PORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SERVER_ID&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SOCKET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_CA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_CAPATH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_CERT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_CIPHER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_CRL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_CRLPATH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_KEY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_SSL_VERIFY_SERVER_CERT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_USE_GTID&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MASTER_HEARTBEAT_PERIOD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MATCH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MAX_ROWS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MAX_SIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MAXVALUE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MEDIUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MEDIUMBLOB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MEDIUMINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MEDIUMTEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MEMORY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MERGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MESSAGE_TEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MICROSECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MIDDLEINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MIGRATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MINUTE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MINUTE_MICROSECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MINUTE_SECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MIN_ROWS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MOD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MODE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MODIFIES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MODIFY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MONTH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MULTILINESTRING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MULTIPOINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MULTIPOLYGON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MUTEX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MYSQL_ERRNO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NAMES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NATIONAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NATURAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NDB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NDBCLUSTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NCHAR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NEW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NO_WAIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NODEGROUP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NONE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NOT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NO_WRITE_TO_BINLOG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NULL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NUMERIC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NVARCHAR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OFFSET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OLD_PASSWORD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ONE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ONLINE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ONLY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OPEN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OPTIMIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OPTIONS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OPTION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OPTIONALLY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ORDER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OUT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OUTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OUTFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OWNER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PACK_KEYS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PAGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PAGE_CHECKSUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PARSER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PARSE_VCOL_EXPR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PARTIAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PARTITION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PARTITIONING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PARTITIONS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PASSWORD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PERSISTENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PHASE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLUGIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLUGINS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;POINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;POLYGON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PORT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PRECISION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PREPARE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PRESERVE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PREV&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PRIMARY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PRIVILEGES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PROCEDURE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PROCESS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PROCESSLIST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PROFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PROFILES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PROXY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PURGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QUARTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QUERY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QUICK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RANGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;READ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;READ_ONLY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;READ_WRITE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;READS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REBUILD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RECOVER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REDO_BUFFER_SIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REDOFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REDUNDANT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REFERENCES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REGEXP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RELAY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RELAYLOG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RELAY_LOG_FILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RELAY_LOG_POS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RELAY_THREAD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RELEASE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RELOAD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RENAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REORGANIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REPAIR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REPEATABLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REPLACE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REPLICATION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REPEAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REQUIRE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RESET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RESIGNAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RESTORE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RESTRICT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RESUME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RETURNED_SQLSTATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RETURN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RETURNING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RETURNS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REVERSE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;REVOKE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RIGHT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RLIKE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROLLBACK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROLLUP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROUTINE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROW_COUNT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROWS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ROW_FORMAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RTREE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SAVEPOINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SCHEDULE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SCHEMA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SCHEMA_NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SCHEMAS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SECOND_MICROSECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SECURITY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SELECT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SENSITIVE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SEPARATOR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SERIAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SERIALIZABLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SESSION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SERVER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SHARE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SHOW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SHUTDOWN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SIGNAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SIGNED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SIMPLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLAVE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLAVES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLAVE_POS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SLOW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SNAPSHOT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SMALLINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SOCKET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SOFT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SOME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SONAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SOUNDS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SOURCE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SPATIAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SPECIFIC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQLEXCEPTION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQLSTATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQLWARNING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_BIG_RESULT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_BUFFER_RESULT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_CACHE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_CALC_FOUND_ROWS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_NO_CACHE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_SMALL_RESULT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_THREAD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_SECOND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_MINUTE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_HOUR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_DAY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_WEEK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_MONTH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_QUARTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SQL_TSI_YEAR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SSL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;START&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STARTING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STARTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STATS_AUTO_RECALC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STATS_PERSISTENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STATS_SAMPLE_PAGES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STATS_SERVER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STATS_SERVERS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STATUS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STOP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STORAGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STRAIGHT_JOIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STRING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUBCLASS_ORIGIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUBJECT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUBPARTITION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUBPARTITIONS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUPER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUPPRESS_SAFETY_WARNING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUSPEND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SWAPS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SWITCHES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TABLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TABLE_NAME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TABLES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TABLESPACE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TABLE_STATISTICS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TABLE_CHECKSUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TEMPORARY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TEMPTABLE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TERMINATED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;THAN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;THEN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TIME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TIMESTAMPADD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TIMESTAMPDIFF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TINYBLOB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TINYINT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TINYTEXT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRAILING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRANSACTION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRANSACTIONAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRIGGER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRIGGERS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRUE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRUNCATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TYPE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TYPES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNCOMMITTED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNDEFINED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNDO_BUFFER_SIZE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNDOFILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNDO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNICODE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNIQUE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNKNOWN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNLOCK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNINSTALL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNSIGNED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNTIL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UPDATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UPGRADE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USAGE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USER_RESOURCES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USER_STATISTICS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USE_FRM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;USING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UTC_DATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UTC_TIME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UTC_TIMESTAMP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VALUE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VALUES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VARBINARY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VARCHAR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VARCHARACTER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VARIABLES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VARYING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VIA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VIEW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VIRTUAL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WAIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WARNINGS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WEEK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WEIGHT_STRING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WHEN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WHERE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WHILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WITH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WORK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WRAPPER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WRITE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;X509&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;XOR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;XA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;XML&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;YEAR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;YEAR_MONTH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZEROFILL&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">SQL_FUNC</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;ADDDATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BIT_AND&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BIT_OR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BIT_XOR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CAST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;COUNT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURDATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CURTIME&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATE_ADD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DATE_SUB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EXTRACT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GROUP_CONCAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MAX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MID&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NOW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ORDERED_CHECKSUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;POSITION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SESSION_USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STDDEV&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STDDEV_POP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;STDDEV_SAMP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUBDATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUBSTR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUBSTRING&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SYSDATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SYSTEM_USER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TRIM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UNORDERED_CHECKSUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VARIANCE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VAR_POP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VAR_SAMP&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="extract_fileds_fromfile"><a class="viewcode-back" href="../../../source/wafamole.tokenizer.html#wafamole.tokenizer.allowed_tokens.extract_fileds_fromfile">[docs]</a><span class="k">def</span> <span class="nf">extract_fileds_fromfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">dump</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">dump</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<span class="c1"># query su mysql per estrarli tutti</span>
+<span class="n">SYS_DEF</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;SYS_DB&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;MYSQL&quot;</span><span class="p">,</span> <span class="s2">&quot;INFORMATION_SCHEMA&quot;</span><span class="p">,</span> <span class="s2">&quot;SYS&quot;</span><span class="p">,</span> <span class="s2">&quot;PERFORMANCE_SCHEMA&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="s2">&quot;SYSTBL&quot;</span><span class="p">,</span> <span class="n">extract_fileds_fromfile</span><span class="p">(</span><span class="s2">&quot;systables&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;SYSCOL&quot;</span><span class="p">,</span> <span class="n">extract_fileds_fromfile</span><span class="p">(</span><span class="s2">&quot;info_schema_columns&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;SYSVAR&quot;</span><span class="p">,</span> <span class="n">extract_fileds_fromfile</span><span class="p">(</span><span class="s2">&quot;mysql_variables&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;SYSVIEW&quot;</span><span class="p">,</span> <span class="n">extract_fileds_fromfile</span><span class="p">(</span><span class="s2">&quot;sysviews&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;SYSSTORED&quot;</span><span class="p">,</span> <span class="n">extract_fileds_fromfile</span><span class="p">(</span><span class="s2">&quot;sysroutines&quot;</span><span class="p">)),</span>
+<span class="p">]</span>
+
+<span class="n">USR_DEF</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># (&quot;USR_DB&quot;,[]), not in our db</span>
+    <span class="p">(</span><span class="s2">&quot;USRTBL&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;TAB&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="s2">&quot;USRCOL&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;COL1&quot;</span><span class="p">,</span> <span class="s2">&quot;COL2&quot;</span><span class="p">,</span> <span class="s2">&quot;COL3&quot;</span><span class="p">,</span> <span class="s2">&quot;COL4&quot;</span><span class="p">,</span> <span class="s2">&quot;COL5&quot;</span><span class="p">,</span> <span class="s2">&quot;COL6&quot;</span><span class="p">]),</span>
+    <span class="c1"># (&quot;USRVAR&quot;,[]), not in our db</span>
+    <span class="c1"># (&quot;USRVIEW&quot;,[]),</span>
+    <span class="c1"># (&quot;USRFUNC&quot;,[]),</span>
+<span class="p">]</span>
+
+<span class="n">NUMB_TOKENS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DECIMAL&quot;</span><span class="p">,</span> <span class="s2">&quot;INT&quot;</span><span class="p">,</span> <span class="s2">&quot;HEX&quot;</span><span class="p">,</span> <span class="s2">&quot;IP_ADDR&quot;</span><span class="p">]</span>
+
+<span class="n">TOKENS</span> <span class="o">=</span> <span class="n">SYMBOLS</span> <span class="o">+</span> <span class="n">SQL_FUNC</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">PUNCTATION_SUB</span><span class="p">:</span>
+    <span class="n">TOKENS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">SYS_DEF</span><span class="p">:</span>
+    <span class="n">TOKENS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">USR_DEF</span><span class="p">:</span>
+    <span class="n">TOKENS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">NUMB_TOKENS</span><span class="p">:</span>
+    <span class="n">TOKENS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="n">TOKENS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;STR&quot;</span><span class="p">)</span>
+<span class="n">TOKENS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;CHR&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_substitute_list_token</span><span class="p">(</span><span class="n">token_list</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">sys_token</span> <span class="ow">in</span> <span class="n">token_list</span><span class="p">:</span>
+        <span class="n">replace_with</span> <span class="o">=</span> <span class="n">sys_token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">insert_space</span><span class="p">:</span>
+            <span class="n">replace_with</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">replace_with</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sys_token</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">replace_with</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">query</span>
+
+
+<div class="viewcode-block" id="substitute_sysinfo"><a class="viewcode-back" href="../../../source/wafamole.tokenizer.html#wafamole.tokenizer.allowed_tokens.substitute_sysinfo">[docs]</a><span class="k">def</span> <span class="nf">substitute_sysinfo</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">_substitute_list_token</span><span class="p">(</span><span class="n">SYS_DEF</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">_substitute_list_token</span><span class="p">(</span><span class="n">USR_DEF</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">query</span></div>
+
+
+<div class="viewcode-block" id="substitute_punctation"><a class="viewcode-back" href="../../../source/wafamole.tokenizer.html#wafamole.tokenizer.allowed_tokens.substitute_punctation">[docs]</a><span class="k">def</span> <span class="nf">substitute_punctation</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">PUNCTATION_SUB</span><span class="p">:</span>
+        <span class="n">replace_with</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">insert_space</span><span class="p">:</span>
+            <span class="n">replace_with</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">replace_with</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">replace_with</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">query</span></div>
+
+
+<span class="k">def</span> <span class="nf">_sub_with_regexp</span><span class="p">(</span><span class="n">regexp</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">replace_with</span> <span class="o">=</span> <span class="n">token</span>
+    <span class="k">if</span> <span class="n">insert_space</span><span class="p">:</span>
+        <span class="n">replace_with</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">replace_with</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">regexp</span><span class="p">,</span> <span class="n">replace_with</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">query</span>
+
+
+<div class="viewcode-block" id="apply_regexp"><a class="viewcode-back" href="../../../source/wafamole.tokenizer.html#wafamole.tokenizer.allowed_tokens.apply_regexp">[docs]</a><span class="k">def</span> <span class="nf">apply_regexp</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">decimal_r</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;[-+]?[0-9]*\.[0-9]+&quot;</span>
+    <span class="n">int_r</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;[-+]?[0-9]+&quot;</span>
+    <span class="n">hex_r</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;(X&#39;[0-9A-F]+&#39;|0x[0-9A-F]+)&quot;</span>
+    <span class="n">ip_r</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">_sub_with_regexp</span><span class="p">(</span><span class="n">hex_r</span><span class="p">,</span> <span class="s2">&quot;HEX&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">_sub_with_regexp</span><span class="p">(</span><span class="n">ip_r</span><span class="p">,</span> <span class="s2">&quot;IP_ADDR&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">_sub_with_regexp</span><span class="p">(</span><span class="n">decimal_r</span><span class="p">,</span> <span class="s2">&quot;DECIMAL&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">_sub_with_regexp</span><span class="p">(</span><span class="n">int_r</span><span class="p">,</span> <span class="s2">&quot;INT&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">insert_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">query</span></div>
+
+
+<div class="viewcode-block" id="normalize_dots"><a class="viewcode-back" href="../../../source/wafamole.tokenizer.html#wafamole.tokenizer.allowed_tokens.normalize_dots">[docs]</a><span class="k">def</span> <span class="nf">normalize_dots</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">query</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;ORDER BY STR&quot;</span><span class="p">,</span> <span class="s2">&quot; ORDER BY USRCOL&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;CHR DOT USRCOL&quot;</span><span class="p">,</span> <span class="s2">&quot; USRCOL&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;STR DOT USRCOL&quot;</span><span class="p">,</span> <span class="s2">&quot; USRCOL&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;USRTBL DOT USRCOL&quot;</span><span class="p">,</span> <span class="s2">&quot; USRCOL&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">query</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">WAF-A-MoLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Andrea Valenza (avalz), Luca Demetrio (zangobot).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

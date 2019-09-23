@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>evasion package &#8212; WAF-A-MoLE  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="evasion-package">
+<h1>evasion package<a class="headerlink" href="#evasion-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-evasion.evasion">
+<span id="evasion-evasion-module"></span><h2>evasion.evasion module<a class="headerlink" href="#module-evasion.evasion" title="Permalink to this headline">¶</a></h2>
+<p>The main class of WAF-A-MoLE</p>
+<dl class="class">
+<dt id="evasion.evasion.EvasionEngine">
+<em class="property">class </em><code class="sig-prename descclassname">evasion.evasion.</code><code class="sig-name descname">EvasionEngine</code><span class="sig-paren">(</span><em class="sig-param">model: wafamole.models.model.Model</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/evasion/evasion.html#EvasionEngine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#evasion.evasion.EvasionEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="wafamole.evasion.html#wafamole.evasion.engine.CoreEngine" title="wafamole.evasion.engine.CoreEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">wafamole.evasion.engine.CoreEngine</span></code></a></p>
+<p>Evasion engine object.</p>
+<dl class="method">
+<dt id="evasion.evasion.EvasionEngine.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param">payload: str</em>, <em class="sig-param">max_rounds: int = 1000</em>, <em class="sig-param">round_size: int = 20</em>, <em class="sig-param">timeout: int = 14400</em>, <em class="sig-param">threshold: float = 0.5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/evasion/evasion.html#EvasionEngine.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#evasion.evasion.EvasionEngine.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>It tries to produce a payloads that should be classified as a benign payload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>payload</strong> (<em>str</em>) – the initial payload</p></li>
+<li><p><strong>max_rounds</strong> (<em>int</em>) – maximum number of mutation rounds</p></li>
+<li><p><strong>round_size</strong> (<em>int</em>) – how many mutation for each round</p></li>
+<li><p><strong>timeout</strong> (<em>int</em>) – number of seconds before the timeout</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – default 0.5, customizable for different results</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – input arguments are mistyped.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>minimum confidence and correspondent payload that achieve that score</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float, str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-evasion">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-evasion" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">WAF-A-MoLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Andrea Valenza (avalz), Luca Demetrio (zangobot).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/evasion.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

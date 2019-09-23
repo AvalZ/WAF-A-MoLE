@@ -1,0 +1,355 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>payloadfuzzer.sqlfuzzer &#8212; WAF-A-MoLE  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for payloadfuzzer.sqlfuzzer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Strategies and fuzzer class module&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">wafamole.payloadfuzzer.fuzz_utils</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">replace_random</span><span class="p">,</span>
+    <span class="n">filter_candidates</span><span class="p">,</span>
+    <span class="n">random_string</span><span class="p">,</span>
+    <span class="n">num_tautology</span><span class="p">,</span>
+    <span class="n">string_tautology</span><span class="p">,</span>
+    <span class="n">num_contradiction</span><span class="p">,</span>
+    <span class="n">string_contradiction</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="reset_inline_comments"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.reset_inline_comments">[docs]</a><span class="k">def</span> <span class="nf">reset_inline_comments</span><span class="p">(</span><span class="n">payload</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove randomly chosen multi-line comment content.</span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        payload: query payload string</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: payload modified</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/\*[^(/\*|\*/)]*\*/&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">positions</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">payload</span>
+
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span><span class="o">.</span><span class="n">span</span><span class="p">()</span>
+
+    <span class="n">replacements</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/**/&quot;</span><span class="p">]</span>
+
+    <span class="n">replacement</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span>
+
+    <span class="n">new_payload</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[:</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">replacement</span> <span class="o">+</span> <span class="n">payload</span><span class="p">[</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">new_payload</span></div>
+
+
+<div class="viewcode-block" id="logical_invariant"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.logical_invariant">[docs]</a><span class="k">def</span> <span class="nf">logical_invariant</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;logical_invariant</span>
+
+<span class="sd">    Adds an invariant boolean condition to the payload</span>
+
+<span class="sd">    E.g., something OR False</span>
+
+
+<span class="sd">    :param payload:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;(#|-- )&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pos</span><span class="p">:</span>
+        <span class="c1"># No comments found</span>
+        <span class="k">return</span> <span class="n">payload</span>
+
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">replacement</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="c1"># AND True</span>
+            <span class="s2">&quot; AND 1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot; AND True&quot;</span><span class="p">,</span>
+            <span class="s2">&quot; AND &quot;</span> <span class="o">+</span> <span class="n">num_tautology</span><span class="p">(),</span>
+            <span class="s2">&quot; AND &quot;</span> <span class="o">+</span> <span class="n">string_tautology</span><span class="p">(),</span>
+            <span class="c1"># OR False</span>
+            <span class="s2">&quot; OR 0&quot;</span><span class="p">,</span>
+            <span class="s2">&quot; OR False&quot;</span><span class="p">,</span>
+            <span class="s2">&quot; OR &quot;</span> <span class="o">+</span> <span class="n">num_contradiction</span><span class="p">(),</span>
+            <span class="s2">&quot; OR &quot;</span> <span class="o">+</span> <span class="n">string_contradiction</span><span class="p">(),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">new_payload</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[:</span><span class="n">pos</span><span class="p">]</span> <span class="o">+</span> <span class="n">replacement</span> <span class="o">+</span> <span class="n">payload</span><span class="p">[</span><span class="n">pos</span><span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">new_payload</span></div>
+
+
+<div class="viewcode-block" id="change_tautologies"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.change_tautologies">[docs]</a><span class="k">def</span> <span class="nf">change_tautologies</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;((?&lt;=[^</span><span class="se">\&#39;</span><span class="s1">&quot;\d\wx])\d+(?=[^</span><span class="se">\&#39;</span><span class="s1">&quot;\d\wx]))=\1&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">payload</span>
+    <span class="n">candidate</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+    <span class="n">replacements</span> <span class="o">=</span> <span class="p">[</span><span class="n">num_tautology</span><span class="p">(),</span> <span class="n">string_tautology</span><span class="p">()]</span>
+
+    <span class="n">replacement</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span>
+
+    <span class="n">new_payload</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">payload</span><span class="p">[:</span> <span class="n">candidate</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">replacement</span> <span class="o">+</span> <span class="n">payload</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_payload</span></div>
+
+
+<div class="viewcode-block" id="spaces_to_comments"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.spaces_to_comments">[docs]</a><span class="k">def</span> <span class="nf">spaces_to_comments</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="c1"># TODO: make it selectable (can be mixed with other strategies)</span>
+    <span class="n">symbols</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot; &quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;/**/&quot;</span><span class="p">],</span> <span class="s2">&quot;/**/&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; &quot;</span><span class="p">]}</span>
+
+    <span class="n">symbols_in_payload</span> <span class="o">=</span> <span class="n">filter_candidates</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">symbols_in_payload</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">payload</span>
+
+    <span class="c1"># Randomly choose symbol</span>
+    <span class="n">candidate_symbol</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">symbols_in_payload</span><span class="p">)</span>
+    <span class="c1"># Check for possible replacements</span>
+    <span class="n">replacements</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">[</span><span class="n">candidate_symbol</span><span class="p">]</span>
+    <span class="c1"># Choose one replacement randomly</span>
+    <span class="n">candidate_replacement</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span>
+
+    <span class="c1"># Apply mutation at one random occurrence in the payload</span>
+    <span class="k">return</span> <span class="n">replace_random</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">candidate_symbol</span><span class="p">,</span> <span class="n">candidate_replacement</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="spaces_to_whitespaces_alternatives"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.spaces_to_whitespaces_alternatives">[docs]</a><span class="k">def</span> <span class="nf">spaces_to_whitespaces_alternatives</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+
+    <span class="n">symbols</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot; &quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\v</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\v</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\v</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;</span><span class="se">\f</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\v</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;</span><span class="se">\v</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\v</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="n">symbols_in_payload</span> <span class="o">=</span> <span class="n">filter_candidates</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">symbols_in_payload</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">payload</span>
+
+    <span class="c1"># Randomly choose symbol</span>
+    <span class="n">candidate_symbol</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">symbols_in_payload</span><span class="p">)</span>
+    <span class="c1"># Check for possible replacements</span>
+    <span class="n">replacements</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">[</span><span class="n">candidate_symbol</span><span class="p">]</span>
+    <span class="c1"># Choose one replacement randomly</span>
+    <span class="n">candidate_replacement</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span>
+
+    <span class="c1"># Apply mutation at one random occurrence in the payload</span>
+    <span class="k">return</span> <span class="n">replace_random</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">candidate_symbol</span><span class="p">,</span> <span class="n">candidate_replacement</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="random_case"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.random_case">[docs]</a><span class="k">def</span> <span class="nf">random_case</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="n">new_payload</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">swapcase</span><span class="p">()</span>
+        <span class="n">new_payload</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">new_payload</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="comment_rewriting"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.comment_rewriting">[docs]</a><span class="k">def</span> <span class="nf">comment_rewriting</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="ow">in</span> <span class="n">payload</span> <span class="ow">or</span> <span class="s2">&quot;-- &quot;</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">payload</span> <span class="o">+</span> <span class="n">random_string</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;*/&quot;</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">replace_random</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="s2">&quot;*/&quot;</span><span class="p">,</span> <span class="n">random_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;*/&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">payload</span></div>
+
+
+<div class="viewcode-block" id="swap_int_repr"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.swap_int_repr">[docs]</a><span class="k">def</span> <span class="nf">swap_int_repr</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+
+    <span class="n">candidates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?&lt;=[^</span><span class="se">\&#39;</span><span class="s1">&quot;\d\wx])\d+(?=[^</span><span class="se">\&#39;</span><span class="s1">&quot;\d\wx])&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">payload</span>
+
+    <span class="n">candidate_pos</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span><span class="o">.</span><span class="n">span</span><span class="p">()</span>
+
+    <span class="n">candidate</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="n">candidate_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">candidate_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="n">replacements</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">hex</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">candidate</span><span class="p">)),</span>
+        <span class="s2">&quot;(SELECT </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">candidate</span><span class="p">),</span>
+        <span class="c1"># &quot;({})&quot;.format(candidate),</span>
+    <span class="p">]</span>
+
+    <span class="n">replacement</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">payload</span><span class="p">[:</span> <span class="n">candidate_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">replacement</span> <span class="o">+</span> <span class="n">payload</span><span class="p">[</span><span class="n">candidate_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span></div>
+
+
+<div class="viewcode-block" id="swap_keywords"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.swap_keywords">[docs]</a><span class="k">def</span> <span class="nf">swap_keywords</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+
+    <span class="n">symbols</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c1"># OR</span>
+        <span class="s2">&quot;||&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; OR &quot;</span><span class="p">,</span> <span class="s2">&quot; || &quot;</span><span class="p">],</span>
+        <span class="s2">&quot; || &quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; OR &quot;</span><span class="p">,</span> <span class="s2">&quot;||&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;OR&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; OR &quot;</span><span class="p">,</span> <span class="s2">&quot;||&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;  OR  &quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; OR &quot;</span><span class="p">,</span> <span class="s2">&quot;||&quot;</span><span class="p">,</span> <span class="s2">&quot; || &quot;</span><span class="p">],</span>
+        <span class="c1"># AND</span>
+        <span class="s2">&quot;&amp;&amp;&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; AND &quot;</span><span class="p">,</span> <span class="s2">&quot; &amp;&amp; &quot;</span><span class="p">],</span>
+        <span class="s2">&quot; &amp;&amp; &quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;AND&quot;</span><span class="p">,</span> <span class="s2">&quot; AND &quot;</span><span class="p">,</span> <span class="s2">&quot; &amp;&amp; &quot;</span><span class="p">],</span>
+        <span class="s2">&quot;AND&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; AND &quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;&amp;&quot;</span><span class="p">,</span> <span class="s2">&quot; &amp;&amp; &quot;</span><span class="p">],</span>
+        <span class="s2">&quot;  AND  &quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; AND &quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;&amp;&quot;</span><span class="p">],</span>
+        <span class="c1"># Not equals</span>
+        <span class="s2">&quot;&lt;&gt;&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;!=&quot;</span><span class="p">,</span> <span class="s2">&quot; NOT LIKE &quot;</span><span class="p">],</span>
+        <span class="s2">&quot;!=&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; != &quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot; &lt;&gt; &quot;</span><span class="p">,</span> <span class="s2">&quot; NOT LIKE &quot;</span><span class="p">],</span>
+        <span class="c1"># Equals</span>
+        <span class="s2">&quot; = &quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; LIKE &quot;</span><span class="p">,</span> <span class="s2">&quot;=&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;LIKE&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot; LIKE &quot;</span><span class="p">,</span> <span class="s2">&quot;=&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="n">symbols_in_payload</span> <span class="o">=</span> <span class="n">filter_candidates</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">symbols_in_payload</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">payload</span>
+
+    <span class="c1"># Randomly choose symbol</span>
+    <span class="n">candidate_symbol</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">symbols_in_payload</span><span class="p">)</span>
+    <span class="c1"># Check for possible replacements</span>
+    <span class="n">replacements</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">[</span><span class="n">candidate_symbol</span><span class="p">]</span>
+    <span class="c1"># Choose one replacement randomly</span>
+    <span class="n">candidate_replacement</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span>
+
+    <span class="c1"># Apply mutation at one random occurrence in the payload</span>
+    <span class="k">return</span> <span class="n">replace_random</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">candidate_symbol</span><span class="p">,</span> <span class="n">candidate_replacement</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SqlFuzzer"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.SqlFuzzer">[docs]</a><span class="k">class</span> <span class="nc">SqlFuzzer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SqlFuzzer class&quot;&quot;&quot;</span>
+
+    <span class="n">strategies</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">spaces_to_comments</span><span class="p">,</span>
+        <span class="n">random_case</span><span class="p">,</span>
+        <span class="n">swap_keywords</span><span class="p">,</span>
+        <span class="n">swap_int_repr</span><span class="p">,</span>
+        <span class="n">spaces_to_whitespaces_alternatives</span><span class="p">,</span>
+        <span class="n">comment_rewriting</span><span class="p">,</span>
+        <span class="n">change_tautologies</span><span class="p">,</span>
+        <span class="n">logical_invariant</span><span class="p">,</span>
+        <span class="n">reset_inline_comments</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_payload</span> <span class="o">=</span> <span class="n">payload</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">payload</span> <span class="o">=</span> <span class="n">payload</span>
+
+<div class="viewcode-block" id="SqlFuzzer.fuzz"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.SqlFuzzer.fuzz">[docs]</a>    <span class="k">def</span> <span class="nf">fuzz</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">strategy</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strategies</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">payload</span> <span class="o">=</span> <span class="n">strategy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+        <span class="c1"># print(self.payload)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload</span></div>
+
+<div class="viewcode-block" id="SqlFuzzer.current"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.SqlFuzzer.current">[docs]</a>    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload</span></div>
+
+<div class="viewcode-block" id="SqlFuzzer.reset"><a class="viewcode-back" href="../../source/payloadfuzzer.html#payloadfuzzer.sqlfuzzer.SqlFuzzer.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_payload</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">payload</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">WAF-A-MoLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Andrea Valenza (avalz), Luca Demetrio (zangobot).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

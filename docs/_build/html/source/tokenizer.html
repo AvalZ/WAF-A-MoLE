@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokenizer package &#8212; WAF-A-MoLE  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="tokenizer-package">
+<h1>tokenizer package<a class="headerlink" href="#tokenizer-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-tokenizer.allowed_tokens">
+<span id="tokenizer-allowed-tokens-module"></span><h2>tokenizer.allowed_tokens module<a class="headerlink" href="#module-tokenizer.allowed_tokens" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tokenizer.allowed_tokens.apply_regexp">
+<code class="sig-prename descclassname">tokenizer.allowed_tokens.</code><code class="sig-name descname">apply_regexp</code><span class="sig-paren">(</span><em class="sig-param">query</em>, <em class="sig-param">insert_space=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/allowed_tokens.html#apply_regexp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.allowed_tokens.apply_regexp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tokenizer.allowed_tokens.extract_fileds_fromfile">
+<code class="sig-prename descclassname">tokenizer.allowed_tokens.</code><code class="sig-name descname">extract_fileds_fromfile</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/allowed_tokens.html#extract_fileds_fromfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.allowed_tokens.extract_fileds_fromfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tokenizer.allowed_tokens.normalize_dots">
+<code class="sig-prename descclassname">tokenizer.allowed_tokens.</code><code class="sig-name descname">normalize_dots</code><span class="sig-paren">(</span><em class="sig-param">query</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/allowed_tokens.html#normalize_dots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.allowed_tokens.normalize_dots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tokenizer.allowed_tokens.substitute_punctation">
+<code class="sig-prename descclassname">tokenizer.allowed_tokens.</code><code class="sig-name descname">substitute_punctation</code><span class="sig-paren">(</span><em class="sig-param">query</em>, <em class="sig-param">insert_space=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/allowed_tokens.html#substitute_punctation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.allowed_tokens.substitute_punctation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tokenizer.allowed_tokens.substitute_sysinfo">
+<code class="sig-prename descclassname">tokenizer.allowed_tokens.</code><code class="sig-name descname">substitute_sysinfo</code><span class="sig-paren">(</span><em class="sig-param">query</em>, <em class="sig-param">insert_space=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/allowed_tokens.html#substitute_sysinfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.allowed_tokens.substitute_sysinfo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-tokenizer.tokenizer">
+<span id="tokenizer-tokenizer-module"></span><h2>tokenizer.tokenizer module<a class="headerlink" href="#module-tokenizer.tokenizer" title="Permalink to this headline">¶</a></h2>
+<p>Based on</p>
+<p><a class="reference external" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6163109">https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6163109</a>
+Classification of Malicious Web Code by Machine Learning - Komiya et al.</p>
+<p><a class="reference external" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6993127">https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6993127</a>
+SQL Injection Detection using Machine Learning</p>
+<p><a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0167404816300451">https://www.sciencedirect.com/science/article/pii/S0167404816300451</a>
+SQLiGoT: Detecting SQL injection attacks using graph of tokens and SVM</p>
+<dl class="class">
+<dt id="tokenizer.tokenizer.Tokenizer">
+<em class="property">class </em><code class="sig-prename descclassname">tokenizer.tokenizer.</code><code class="sig-name descname">Tokenizer</code><a class="reference internal" href="../_modules/tokenizer/tokenizer.html#Tokenizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.tokenizer.Tokenizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Tokenizer class.</p>
+<dl class="method">
+<dt id="tokenizer.tokenizer.Tokenizer.create_dataset_from_file">
+<code class="sig-name descname">create_dataset_from_file</code><span class="sig-paren">(</span><em class="sig-param">filepath: str</em>, <em class="sig-param">label: int</em>, <em class="sig-param">limit: int = None</em>, <em class="sig-param">unique_rows=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/tokenizer.html#Tokenizer.create_dataset_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.tokenizer.Tokenizer.create_dataset_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create dataset from fil containing sql queries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> (<em>str</em>) – path of sql queries dataset</p></li>
+<li><p><strong>label</strong> (<em>int</em>) – labels to assign to each sample</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>limit</strong> (<em>int</em>) – if None, it specifies how many queries to use (default: (None))</p></li>
+<li><p><strong>unique_rows</strong> (<em>bool</em>) – True for removing all the duplicates (default: (True))</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – params has wrong types</p></li>
+<li><p><strong>FileNotFoundError</strong> – filepath not pointing to regular file</p></li>
+<li><p><strong>TypeError</strong> – limit is not None and not int</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>X and y</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(numpy ndarray, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tokenizer.tokenizer.Tokenizer.get_allowed_tokens">
+<code class="sig-name descname">get_allowed_tokens</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/tokenizer.html#Tokenizer.get_allowed_tokens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.tokenizer.Tokenizer.get_allowed_tokens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the tokens used for creating the feature vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list containing all the tokens.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>[list]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tokenizer.tokenizer.Tokenizer.produce_feat_vector">
+<code class="sig-name descname">produce_feat_vector</code><span class="sig-paren">(</span><em class="sig-param">sql_query: str</em>, <em class="sig-param">normalize=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tokenizer/tokenizer.html#Tokenizer.produce_feat_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tokenizer.tokenizer.Tokenizer.produce_feat_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns the feature vector as histogram of tokens, produced from the input query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sql_query</strong> (<em>str</em>) – An input SQL query</p>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><p><strong>normalize</strong> (<em>bool</em>) – True for producing a normalized hitogram. (default: (False))</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – params has wrong types</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>histogram of tokens</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tokenizer">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tokenizer" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">WAF-A-MoLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Andrea Valenza (avalz), Luca Demetrio (zangobot).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/tokenizer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

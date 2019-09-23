@@ -1,0 +1,360 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>models package &#8212; WAF-A-MoLE  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="models-package">
+<h1>models package<a class="headerlink" href="#models-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-models.keras_model">
+<span id="models-keras-model-module"></span><h2>models.keras_model module<a class="headerlink" href="#module-models.keras_model" title="Permalink to this headline">¶</a></h2>
+<p>Wrapper for keras classifiers.</p>
+<dl class="class">
+<dt id="models.keras_model.KerasModelWrapper">
+<em class="property">class </em><code class="sig-prename descclassname">models.keras_model.</code><code class="sig-name descname">KerasModelWrapper</code><span class="sig-paren">(</span><em class="sig-param">keras_classifier=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/keras_model.html#KerasModelWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.keras_model.KerasModelWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="wafamole.models.html#wafamole.models.model.Model" title="wafamole.models.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">wafamole.models.model.Model</span></code></a></p>
+<p>Keras model wrapper</p>
+<dl class="method">
+<dt id="models.keras_model.KerasModelWrapper.classify">
+<code class="sig-name descname">classify</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/keras_model.html#KerasModelWrapper.classify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.keras_model.KerasModelWrapper.classify" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns the probability of belonging to a particular class.
+It calls the extract_features function on the input value to produce a feature vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – an input belonging to the input space of the model</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – value not numpy ndarray</p></li>
+<li><p><strong>ModelNotLoadedError</strong> – calling function without having loaded or passed model as arg</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the confidence for each class of the problem.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.keras_model.KerasModelWrapper.extract_features">
+<code class="sig-name descname">extract_features</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/keras_model.html#KerasModelWrapper.extract_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.keras_model.KerasModelWrapper.extract_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns the input. To modify this behaviour, extend this class and re-define this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>numpy ndarray</em>) – a sample that belongs to the input space of the model</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the input.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.keras_model.KerasModelWrapper.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/keras_model.html#KerasModelWrapper.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.keras_model.KerasModelWrapper.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the internal keras classifier given as input in the constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>numpy ndarray</em>) – training data</p></li>
+<li><p><strong>Y</strong> (<em>numpy ndarray</em>) – training label</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – X, Y not numpy ndarray</p></li>
+<li><p><strong>ModelNotLoadedError</strong> – calling function without having loaded or passed model as arg</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.keras_model.KerasModelWrapper.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param">filepath</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/keras_model.html#KerasModelWrapper.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.keras_model.KerasModelWrapper.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a keras classifier stored in filepath.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>string</em>) – The path of the keras classifier.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – filepath is not string.</p></li>
+<li><p><strong>FileNotFoundError</strong> – filepath not pointing to any file.</p></li>
+<li><p><strong>NotKerasModelError</strong> – model can not be loaded.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-models.model">
+<span id="models-model-module"></span><h2>models.model module<a class="headerlink" href="#module-models.model" title="Permalink to this headline">¶</a></h2>
+<p>Abstract machine learning model.</p>
+<dl class="class">
+<dt id="models.model.Model">
+<em class="property">class </em><code class="sig-prename descclassname">models.model.</code><code class="sig-name descname">Model</code><a class="reference internal" href="../_modules/models/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract machine learning model wrapper.</p>
+<dl class="method">
+<dt id="models.model.Model.classify">
+<em class="property">abstract </em><code class="sig-name descname">classify</code><span class="sig-paren">(</span><em class="sig-param">value: object</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/model.html#Model.classify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.model.Model.classify" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns the probability of belonging to a particular class.
+It calls the extract_features function on the input value to produce a feature vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>object</em>) – Input value</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the confidence for each class of the classifier.
+If binary classifications, it returns a [1,2] matrix, where the first entry is probability of being 0 and
+the second entry is the probability of being 1 (namely, (1-p, p))</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.model.Model.extract_features">
+<em class="property">abstract </em><code class="sig-name descname">extract_features</code><span class="sig-paren">(</span><em class="sig-param">value: object</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/model.html#Model.extract_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.model.Model.extract_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>It extract a feature vector from the input object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>object</em>) – An input point that belongs to the input space of the wrapped model.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>array containing the feature vector of the input value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>feature_vector (numpy ndarray)</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – this method needs to be implemented</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.model.Model.fit">
+<em class="property">abstract </em><code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/model.html#Model.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.model.Model.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the wrapped model by feeding it with X and Y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>list of data samples</em>) – the training data</p></li>
+<li><p><strong>Y</strong> (<em>list of classes</em>) – the training labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – this method needs to be implemented</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-models.sklearn_model">
+<span id="models-sklearn-model-module"></span><h2>models.sklearn_model module<a class="headerlink" href="#module-models.sklearn_model" title="Permalink to this headline">¶</a></h2>
+<p>Wrapper for sci-kit learn classifiers.</p>
+<dl class="class">
+<dt id="models.sklearn_model.SklearnModelWrapper">
+<em class="property">class </em><code class="sig-prename descclassname">models.sklearn_model.</code><code class="sig-name descname">SklearnModelWrapper</code><span class="sig-paren">(</span><em class="sig-param">sklearn_classifier=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/sklearn_model.html#SklearnModelWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.sklearn_model.SklearnModelWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="wafamole.models.html#wafamole.models.model.Model" title="wafamole.models.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">wafamole.models.model.Model</span></code></a></p>
+<p>Sci-kit learn classifier wrapper class</p>
+<dl class="method">
+<dt id="models.sklearn_model.SklearnModelWrapper.classify">
+<code class="sig-name descname">classify</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/sklearn_model.html#SklearnModelWrapper.classify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.sklearn_model.SklearnModelWrapper.classify" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns the probability of belonging to a particular class.
+It calls the extract_features function on the input value to produce a feature vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>numpy ndarray</em>) – an input belonging to the input space of the model</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ModelNotLoadedError</strong> – calling function without having loaded or passed model as arg</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the confidence for each class of the problem.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.sklearn_model.SklearnModelWrapper.extract_features">
+<code class="sig-name descname">extract_features</code><span class="sig-paren">(</span><em class="sig-param">value: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/sklearn_model.html#SklearnModelWrapper.extract_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.sklearn_model.SklearnModelWrapper.extract_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns the input. To modify this behaviour, extend this class and re-define this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>numpy ndarray</em>) – a sample that belongs to the input space of the model</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the input.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.sklearn_model.SklearnModelWrapper.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/sklearn_model.html#SklearnModelWrapper.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.sklearn_model.SklearnModelWrapper.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the internal scikit-learn classifier given as input in the constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>numpy ndarray</em>) – training data</p></li>
+<li><p><strong>Y</strong> (<em>numpy ndarray</em>) – training label</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – X, Y not numpy ndarray</p></li>
+<li><p><strong>ModelNotLoadedError</strong> – calling function without having loaded or passed model as arg</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.sklearn_model.SklearnModelWrapper.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param">filepath</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/sklearn_model.html#SklearnModelWrapper.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.sklearn_model.SklearnModelWrapper.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a sklearn classifier stored in filepath.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>string</em>) – The path of the sklearn classifier.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – filepath is not string.</p></li>
+<li><p><strong>FileNotFoundError</strong> – filepath not pointing to any file.</p></li>
+<li><p><strong>NotSklearnModelError</strong> – model can not be loaded.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-models" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">WAF-A-MoLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Andrea Valenza (avalz), Luca Demetrio (zangobot).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

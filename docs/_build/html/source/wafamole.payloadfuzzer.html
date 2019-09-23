@@ -1,0 +1,373 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>wafamole.payloadfuzzer package &#8212; WAF-A-MoLE  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="wafamole-payloadfuzzer-package">
+<h1>wafamole.payloadfuzzer package<a class="headerlink" href="#wafamole-payloadfuzzer-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-wafamole.payloadfuzzer.fuzz_utils">
+<span id="wafamole-payloadfuzzer-fuzz-utils-module"></span><h2>wafamole.payloadfuzzer.fuzz_utils module<a class="headerlink" href="#module-wafamole.payloadfuzzer.fuzz_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.filter_candidates">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">filter_candidates</code><span class="sig-paren">(</span><em class="sig-param">symbols</em>, <em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#filter_candidates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.filter_candidates" title="Permalink to this definition">¶</a></dt>
+<dd><p>It removes all the symbols that are not contained inside the input payload string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbols</strong> (<em>dict</em>) – dictionary of symbols to filter (using the key)</p></li>
+<li><p><strong>payload</strong> (<em>str</em>) – the payload to use for the filtering</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – bad types passed as argument</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list containing all the symbols that are contained inside the payload.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.num_contradiction">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">num_contradiction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#num_contradiction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.num_contradiction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a random contradiction explicit using numbers chosen from a fixed set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string containing a contradiction</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.num_tautology">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">num_tautology</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#num_tautology"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.num_tautology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a random tautology explicit using numbers chosen from a fixed set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string containing a tautology</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.random_char">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">random_char</code><span class="sig-paren">(</span><em class="sig-param">spaces=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#random_char"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.random_char" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a random character.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><p><strong>spaces</strong> (<em>bool</em>) – include spaces [default = True]</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – spaces not bool</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>random character</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.random_string">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">random_string</code><span class="sig-paren">(</span><em class="sig-param">max_len=5</em>, <em class="sig-param">spaces=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#random_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.random_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>It creates a random string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_length</strong> (<em>int</em>) – the maximum length of the string [default=5]</p></li>
+<li><p><strong>spaces</strong> (<em>bool</em>) – if True, all the printable character will be considered. Else, only letters and digits [default=True]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – bad type passed as argument</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>random string</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.replace_nth">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">replace_nth</code><span class="sig-paren">(</span><em class="sig-param">candidate</em>, <em class="sig-param">sub</em>, <em class="sig-param">wanted</em>, <em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#replace_nth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.replace_nth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace the n-th occurrence of a portion of the candidate with wanted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>candidate</strong> (<em>str</em>) – the string to be modified</p></li>
+<li><p><strong>sub</strong> (<em>str</em>) – regexp containing what to substitute</p></li>
+<li><p><strong>wanted</strong> (<em>str</em>) – the string that will replace sub</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – the index of the occurrence to replace</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – bad type passed as arguments</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the modified string</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.replace_random">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">replace_random</code><span class="sig-paren">(</span><em class="sig-param">candidate</em>, <em class="sig-param">sub</em>, <em class="sig-param">wanted</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#replace_random"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.replace_random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace one picked at random of the occurrence of sub inside candidate with wanted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>candidate</strong> (<em>str</em>) – the string to be modified</p></li>
+<li><p><strong>sub</strong> (<em>str</em>) – regexp containing what to substitute</p></li>
+<li><p><strong>wanted</strong> (<em>str</em>) – the string that will replace sub</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – bad type passed as arguments</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the modified string</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.string_contradiction">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">string_contradiction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#string_contradiction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.string_contradiction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a random contradiction chosen from a fixed set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string containing a contradiction</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.fuzz_utils.string_tautology">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.fuzz_utils.</code><code class="sig-name descname">string_tautology</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/fuzz_utils.html#string_tautology"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.fuzz_utils.string_tautology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a random tautology chosen from a fixed set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string containing a tautology</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-wafamole.payloadfuzzer.sqlfuzzer">
+<span id="wafamole-payloadfuzzer-sqlfuzzer-module"></span><h2>wafamole.payloadfuzzer.sqlfuzzer module<a class="headerlink" href="#module-wafamole.payloadfuzzer.sqlfuzzer" title="Permalink to this headline">¶</a></h2>
+<p>Strategies and fuzzer class module</p>
+<dl class="class">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer">
+<em class="property">class </em><code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">SqlFuzzer</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#SqlFuzzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>SqlFuzzer class</p>
+<dl class="method">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.current">
+<code class="sig-name descname">current</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#SqlFuzzer.current"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.current" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.fuzz">
+<code class="sig-name descname">fuzz</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#SqlFuzzer.fuzz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.fuzz" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#SqlFuzzer.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.strategies">
+<code class="sig-name descname">strategies</code><em class="property"> = [&lt;function spaces_to_comments&gt;, &lt;function random_case&gt;, &lt;function swap_keywords&gt;, &lt;function swap_int_repr&gt;, &lt;function spaces_to_whitespaces_alternatives&gt;, &lt;function comment_rewriting&gt;, &lt;function change_tautologies&gt;, &lt;function logical_invariant&gt;, &lt;function reset_inline_comments&gt;]</em><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.SqlFuzzer.strategies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.change_tautologies">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">change_tautologies</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#change_tautologies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.change_tautologies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.comment_rewriting">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">comment_rewriting</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#comment_rewriting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.comment_rewriting" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.logical_invariant">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">logical_invariant</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#logical_invariant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.logical_invariant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an invariant boolean condition to the payload</p>
+<p>E.g., something OR False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>payload</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.random_case">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">random_case</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#random_case"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.random_case" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.reset_inline_comments">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">reset_inline_comments</code><span class="sig-paren">(</span><em class="sig-param">payload: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#reset_inline_comments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.reset_inline_comments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove randomly chosen multi-line comment content.
+:param payload: query payload string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>payload modified</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.spaces_to_comments">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">spaces_to_comments</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#spaces_to_comments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.spaces_to_comments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.spaces_to_whitespaces_alternatives">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">spaces_to_whitespaces_alternatives</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#spaces_to_whitespaces_alternatives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.spaces_to_whitespaces_alternatives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.swap_int_repr">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">swap_int_repr</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#swap_int_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.swap_int_repr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wafamole.payloadfuzzer.sqlfuzzer.swap_keywords">
+<code class="sig-prename descclassname">wafamole.payloadfuzzer.sqlfuzzer.</code><code class="sig-name descname">swap_keywords</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wafamole/payloadfuzzer/sqlfuzzer.html#swap_keywords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wafamole.payloadfuzzer.sqlfuzzer.swap_keywords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-wafamole.payloadfuzzer">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-wafamole.payloadfuzzer" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">WAF-A-MoLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Andrea Valenza (avalz), Luca Demetrio (zangobot).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/wafamole.payloadfuzzer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

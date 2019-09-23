@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokenizer.tokenizer &#8212; WAF-A-MoLE  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for tokenizer.tokenizer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Based on </span>
+
+<span class="sd">https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6163109</span>
+<span class="sd">Classification of Malicious Web Code by Machine Learning - Komiya et al.</span>
+
+<span class="sd">https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6993127</span>
+<span class="sd">SQL Injection Detection using Machine Learning</span>
+
+<span class="sd">https://www.sciencedirect.com/science/article/pii/S0167404816300451</span>
+<span class="sd">SQLiGoT: Detecting SQL injection attacks using graph of tokens and SVM</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sqlparse</span>
+<span class="kn">import</span> <span class="nn">sqlparse.tokens</span> <span class="k">as</span> <span class="nn">tks</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">wafamole.utils.check</span> <span class="k">import</span> <span class="n">type_check</span><span class="p">,</span> <span class="n">file_exists</span>
+
+
+<div class="viewcode-block" id="Tokenizer"><a class="viewcode-back" href="../../source/tokenizer.html#tokenizer.tokenizer.Tokenizer">[docs]</a><span class="k">class</span> <span class="nc">Tokenizer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Tokenizer class.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_tokens</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Other</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Keyword</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Number</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Punctuation</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Operator</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Comparison</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Wildcard</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span>
+            <span class="n">tks</span><span class="o">.</span><span class="n">Operator</span><span class="o">.</span><span class="n">Logical</span><span class="p">,</span>
+        <span class="p">]</span>
+
+<div class="viewcode-block" id="Tokenizer.get_allowed_tokens"><a class="viewcode-back" href="../../source/tokenizer.html#tokenizer.tokenizer.Tokenizer.get_allowed_tokens">[docs]</a>    <span class="k">def</span> <span class="nf">get_allowed_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the tokens used for creating the feature vector.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            [list] : list containing all the tokens.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_tokens</span></div>
+
+    <span class="k">def</span> <span class="nf">_produce_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parsed</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Given a list of sql-parse tokens, it returns a list of only the type of each token.</span>
+<span class="sd">        </span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            parsed (list) : The sql-parse output</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list : List of tokens</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resulting_tokens</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">parsed</span><span class="p">:</span>
+            <span class="n">resulting_tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">ttype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resulting_tokens</span>
+
+<div class="viewcode-block" id="Tokenizer.produce_feat_vector"><a class="viewcode-back" href="../../source/tokenizer.html#tokenizer.tokenizer.Tokenizer.produce_feat_vector">[docs]</a>    <span class="k">def</span> <span class="nf">produce_feat_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql_query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;It returns the feature vector as histogram of tokens, produced from the input query.</span>
+<span class="sd">        </span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            sql_query (str) : An input SQL query</span>
+<span class="sd">        </span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">            normalize (bool) : True for producing a normalized hitogram. (default: (False))</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: params has wrong types</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            numpy ndarray : histogram of tokens</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">type_check</span><span class="p">(</span><span class="n">sql_query</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;sql_query&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">type_check</span><span class="p">(</span><span class="n">normalize</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="s2">&quot;normalize&quot;</span><span class="p">)</span>
+
+        <span class="n">parsed</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sqlparse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">sql_query</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="n">allowed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_tokens</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_produce_tokens</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+        <span class="n">dict_token</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">allowed</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">allowed</span><span class="p">))]))</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">dict_token</span><span class="p">:</span>
+                <span class="n">dict_token</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parent</span> <span class="o">=</span> <span class="n">t</span>
+                <span class="k">while</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">parent</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dict_token</span><span class="p">:</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+                <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">dict_token</span><span class="p">[</span><span class="n">parent</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">dict_token</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">feature_vector</span><span class="p">)</span>
+            <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">feature_vector</span> <span class="o">/</span> <span class="n">norm</span>
+        <span class="k">return</span> <span class="n">feature_vector</span></div>
+
+<div class="viewcode-block" id="Tokenizer.create_dataset_from_file"><a class="viewcode-back" href="../../source/tokenizer.html#tokenizer.tokenizer.Tokenizer.create_dataset_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">create_dataset_from_file</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">unique_rows</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create dataset from fil containing sql queries.</span>
+<span class="sd">        </span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            filepath (str) : path of sql queries dataset</span>
+<span class="sd">            label (int) : labels to assign to each sample</span>
+<span class="sd">        </span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">            limit (int) : if None, it specifies how many queries to use (default: (None))</span>
+<span class="sd">            unique_rows (bool) : True for removing all the duplicates (default: (True))</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: params has wrong types</span>
+<span class="sd">            FileNotFoundError: filepath not pointing to regular file</span>
+<span class="sd">            TypeError: limit is not None and not int</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (numpy ndarray, list) : X and y</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">type_check</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;filepath&quot;</span><span class="p">)</span>
+        <span class="n">type_check</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">)</span>
+        <span class="n">type_check</span><span class="p">(</span><span class="n">unique_rows</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="s2">&quot;unique_rows&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">type_check</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">)</span>
+
+        <span class="n">file_exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">produce_feat_vector</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">unique_rows</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">X</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">WAF-A-MoLE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Andrea Valenza (avalz), Luca Demetrio (zangobot).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
