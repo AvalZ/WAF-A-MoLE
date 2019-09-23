@@ -1,6 +1,9 @@
 # WAF-A-MoLE
 
 A *guided mutation-based fuzzer* for ML-based Web Application Firewalls, inspired by AFL and based on the excellent [FuzzingBook](https://www.fuzzingbook.org) from Andreas Zeller et al.
+Given an input SQL injection query, it tries to produce a *semantics-invariant* query that is able to bypass the target WAF.
+You can use this tool for assesting the robustness of your product by letting WAF-A-MoLE exploring the space of solution to find dangerous "blind spots" left uncovered by the target classifier.
+
 
 [![Python Version](https://img.shields.io/badge/Python-3.7-green.svg)](https://www.python.org/downloads/release/python-374/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AvalZ/WAF-A-MoLE/blob/master/LICENSE)
@@ -49,7 +52,9 @@ These are the mutation operators available in the current version of WAF-A-MoLE.
 
 ## Sample Usage
 
-You can bypass your own WAF, or try WAF-A-MoLE against some example classifiers.
+You can evaluate the robustness of your own WAF, or try WAF-A-MoLE against some example classifiers.
+In the first case, have a look at the [Model](https://github.com/AvalZ/waf-a-mole/blob/master/wafamole/models/model.py) class. Your custom model need to implement this class in order to be evaluated by WAF-A-MoLE.
+We already provide wrappers for *sci-kit learn* and *keras* classifiers that can be extend to fit your feature extraction phase (if any).
 
 ### Help
 
@@ -58,9 +63,8 @@ You can bypass your own WAF, or try WAF-A-MoLE against some example classifiers.
 
 ### Evading example models
 
-These models are located in [wafamole/models/custom/example_models](https://github.com/AvalZ/waf-a-mole/tree/master/wafamole/models/custom/example_models).
-
-Available example models
+We provide some pre-trained model you can have fun with, located in [wafamole/models/custom/example_models](https://github.com/AvalZ/waf-a-mole/tree/master/wafamole/models/custom/example_models).
+The classifiers we used are listed in the table below.
 
 | Classifier name| Algorithm
 | --- | --- |
