@@ -16,7 +16,7 @@ During each iteration, the head of the payload Pool is passed to the **Fuzzer** 
 
 ## Mutation operators
 
-Mutations operators 
+Mutations operators are all *semantics preserving* and they leverage the flexibility of the SQL language (in this version, MySQL).
 
 These are the mutation operators available in the current version of WAF-A-MoLE.
 
@@ -29,4 +29,48 @@ These are the mutation operators available in the current version of WAF-A-MoLE.
 | Integer Encoding | `admin' OR 1=1#` ⇒ `admin' OR 0x1=(SELECT 1)#`| 
 | Operator Swapping | `admin' OR 1=1#` ⇒ `admin' OR 1 LIKE 1#`| 
 | Logical Invariant | `admin' OR 1=1#` ⇒ `admin' OR 1=1 AND 0<1#`| 
+
+
+# Running WAF-A-MoLE
+
+## Prerequisites
+
+* miniconda3
+* [Click](https://click.palletsprojects.com/en/7.x/)
+
+## Setup
+
+## Sample Usage
+
+### Help
+
+```
+wafamole --help
+```
+
+### Evading example models
+
+These models are located in [wafamole/models/custom/example_models](https://github.com/AvalZ/waf-a-mole/tree/master/wafamole/models/custom/example_models).
+
+Available example models
+
+| Classifier |
+| [WafBrain](https://github.com/BBVA/waf-brain) - Recurrent Neural Network | 
+| Token-based - Naive Bayes | 
+| Token-based - Random Forest | 
+| Token-based - Linear SVM | 
+| Token-based - Gaussian SVM | 
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Proportional |  
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Unproportional |  
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Proportional |  
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Unproportional |  
+
+
+Bypass using a `admin' OR 1=1#` equivalent.
+
+#### Tokenizer - Linear SVM
+
+```bash
+wafamole evade --model-type token wafamole/models/custom/example_models/lin_svm_trained.dump  "admin' OR 1=1#"
+```
 
