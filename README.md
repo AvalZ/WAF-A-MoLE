@@ -35,18 +35,26 @@ These are the mutation operators available in the current version of WAF-A-MoLE.
 
 ## Prerequisites
 
-* miniconda3
+* numpy
+* keras
+* scikit-learn
+* joblib
+* sqlparse
+* networkx
 * [Click](https://click.palletsprojects.com/en/7.x/)
 
 ## Setup
 
+`pip install -r requirements.txt`
+
 ## Sample Usage
+
+You can bypass your own WAF, or try WAF-A-MoLE against some example classifiers.
 
 ### Help
 
-```
-wafamole --help
-```
+`wafamole --help` 
+
 
 ### Evading example models
 
@@ -66,11 +74,24 @@ Available example models
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Unproportional |  
 
 
-Bypass using a `admin' OR 1=1#` equivalent.
+#### Token-based - Linear SVM
 
-#### Tokenizer - Linear SVM
+Bypass a token-based Linear SVM classifier using a `admin' OR 1=1#` equivalent.
 
 ```bash
 wafamole evade --model-type token wafamole/models/custom/example_models/lin_svm_trained.dump  "admin' OR 1=1#"
 ```
+
+#### SQLiGoT
+
+
+```bash
+wafamole evade --model-type DP wafamole/models/custom/example_models/graph_directed_proportional_sqligot "admin' OR 1=1#"
+```
+
+BE CAREFUL! This classifier is really strong, it may take a long time (up to 3 hours) for some variants (see Benchmark section).
+
+# Benchmark
+
+# Contribute
 
