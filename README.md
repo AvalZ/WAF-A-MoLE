@@ -78,6 +78,13 @@ The classifiers we used are listed in the table below.
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Proportional | Gaussian SVM |
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Unproportional | Gaussian SVM |
 
+#### WAF-BRAIN - Recurrent Neural Newtork
+
+Bypass the pre-trained WAF-Brain classifier using a `admin' OR 1=1#` equivalent.
+
+```bash
+wafamole evade --model-type waf-brain wafamole/models/custom/example_models/waf-brain.h5  "admin' OR 1=1#"
+```
 
 #### Token-based - Naive Bayes
 
@@ -121,8 +128,9 @@ wafamole evade --model-type DP wafamole/models/custom/example_models/graph_direc
 ```
 
 **BEFORE LAUNCHING EVALUATION ON SQLiGoT**
-This classifier is really strong, since the feature extraction phase produce vectors with structure and the pre-trained classifiers are strongly regularized.
-It may take a long time (up to 3 hours) for some variants (see Benchmark section) to produce a payload that achieves evasion.
+
+These classifiers are more robust with respect to the others, as the feature extraction phase produce vectors with more complex structure, and all the pre-trained classifiers have been strongly regularized.
+It may take hours for some variants to produce a payload that achieves evasion (see Benchmark section).
 
 # Benchmark
 
