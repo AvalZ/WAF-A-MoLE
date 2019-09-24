@@ -59,7 +59,37 @@ We already provide wrappers for *sci-kit learn* and *keras* classifiers that can
 ### Help
 
 `wafamole --help` 
+```
+Usage: wafamole [OPTIONS] COMMAND [ARGS]...
 
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  evade  Launch WAF-A-MoLE against a target classifier.
+```
+
+
+`wafamole evade --help` 
+```
+Usage: wafamole evade [OPTIONS] MODEL_PATH PAYLOAD
+
+  Launch WAF-A-MoLE against a target classifier.
+
+Options:
+  -T, --model-type TEXT     Type of classifier to load
+  -t, --timeout INTEGER     Timeout when evading the model
+  -r, --max-rounds INTEGER  Maximum number of fuzzing rounds
+  -s, --round-size INTEGER  Fuzzing step size for each round (parallel fuzzing
+                            steps)
+  --threshold FLOAT         Classification threshold of the target WAF [0.5]
+  --random-engine TEXT      Use random transformations instead of evolution
+                            engine. Set the number of trials
+  --output-path TEXT        Location were to save the results of the random
+                            engine. NOT USED WITH REGULAR EVOLUTION ENGINE
+  --help                    Show this message and exit.
+
+```
 
 ### Evading example models
 
