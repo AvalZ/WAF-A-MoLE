@@ -165,7 +165,19 @@ It may take hours for some variants to produce a payload that achieves evasion (
 
 # Benchmark
 
+We evaluated WAF-A-MoLE against all our example models.
+
+The plot below shows the time it took for WAF-A-MoLE to mutate the `admin' OR 1=1#` payload until it was accepted by each classifier as benign.
+
+On the *x* axis we have time (in seconds, logarithmic scale).
+On the *y* axis we have the *confidence* value, i.e., how sure a classifier is that a given payload is a SQL injection (in percentage).
+
+Notice that being "50% sure" that a payload is a SQL injection is equivalent to flipping a coin.
+This is the usual classification threshold: if the confidence is lower, the payload is classified as benign.
+
 ![Benchmark over time](docs/fig/benchmark_over_time.png)
+
+Experiments were performed on [DigitalOcean *Standard* Droplets](https://www.digitalocean.com/products/droplets/).
 
 # Contribute
 
@@ -179,7 +191,7 @@ In particular, if you are intrested in expanding this project, we look for the f
 
 # Team
 
-* [Luca Demetrio](https://zangobot.github.io/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
+* [Luca Demetrio](http://csec.it/people/luca_demetrio/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
 * [Andrea Valenza](https://avalz.it/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
 * [Gabriele Costa](https://www.imtlucca.it/it/gabriele.costa) - [SysMA](http://sysma.imtlucca.it/), IMT Lucca
 * [Giovanni Lagorio](https://csec.it/people/giovanni_lagorio/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
