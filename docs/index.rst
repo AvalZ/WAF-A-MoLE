@@ -5,6 +5,8 @@ Welcome to WAF-A-MoLE's documentation!
    :maxdepth: 10
    :caption: Contents:
    
+   source/modules
+
    source/wafamole
    source/wafamole.evasion
    source/wafamole.models

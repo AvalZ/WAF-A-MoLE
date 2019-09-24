@@ -2,6 +2,6 @@ wafamole
 ========
 
 .. toctree::
-   :maxdepth: 10
+   :maxdepth: 4
 
    wafamole
