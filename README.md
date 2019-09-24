@@ -8,6 +8,7 @@ You can use this tool for assessing the robustness of your product by letting WA
 
 [![Python Version](https://img.shields.io/badge/Python-3.7-green.svg)](https://www.python.org/downloads/release/python-374/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AvalZ/WAF-A-MoLE/blob/master/LICENSE)
+[![Documentation Status](https://readthedocs.org/projects/waf-a-mole/badge/?version=latest)](https://waf-a-mole.readthedocs.io/en/latest/?badge=latest)
 
 # Architecture
 
