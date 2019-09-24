@@ -2,7 +2,7 @@
 
 A *guided mutation-based fuzzer* for ML-based Web Application Firewalls, inspired by AFL and based on the [FuzzingBook](https://www.fuzzingbook.org) from Andreas Zeller et al.
 
-Given an input SQL injection query, it tries to produce a *semantics-invariant* query that is able to bypass the target WAF.
+Given an input SQL injection query, it tries to produce a *semantic invariant* query that is able to bypass the target WAF.
 You can use this tool for assessing the robustness of your product by letting WAF-A-MoLE explore the solution space to find dangerous "blind spots" left uncovered by the target classifier.
 
 
