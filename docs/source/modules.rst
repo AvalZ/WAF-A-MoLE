@@ -2,11 +2,6 @@ wafamole
 ========
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 10
 
-   
-   wafamole.evasion
-   wafamole.models
-   wafamole.payloadfuzzer
    wafamole
-   wafamole.tokenizer
