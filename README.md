@@ -178,8 +178,8 @@ In particular, if you are intrested in expanding this project, we look for the f
 
 # Team
 
-[Andrea Valenza](https://avalz.it/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
-[Luca Demetrio](https://zangobot.github.io/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
-[Gabriele Costa](https://www.imtlucca.it/it/gabriele.costa) - [SysMA](http://sysma.imtlucca.it/), [IMT Lucca](https://www.imtlucca.it/)
-[Giovanni Lagorio](https://csec.it/people/giovanni_lagorio/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
+* [Andrea Valenza](https://avalz.it/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
+* [Luca Demetrio](https://zangobot.github.io/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
+* [Gabriele Costa](https://www.imtlucca.it/it/gabriele.costa) - [SysMA](http://sysma.imtlucca.it/), [IMT Lucca](https://www.imtlucca.it/)
+* [Giovanni Lagorio](https://csec.it/people/giovanni_lagorio/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
 
