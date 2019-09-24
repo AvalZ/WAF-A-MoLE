@@ -21,7 +21,7 @@ During each iteration, the head of the payload Pool is passed to the **Fuzzer** 
 
 Mutations operators are all *semantics preserving* and they leverage the flexibility of the SQL language (in this version, MySQL).
 
-These are the mutation operators available in the current version of WAF-A-MoLE.
+Below are the mutation operators available in the current version of WAF-A-MoLE.
 
 | Mutation | Example | 
 | --- | --- |
@@ -164,5 +164,22 @@ It may take hours for some variants to produce a payload that achieves evasion (
 
 # Benchmark
 
+![Benchmark over time](docs/fig/benchmark_over_time.png)
+
 # Contribute
+
+Questions, bug reports and pull requests are welcome.
+
+In particular, if you are intrested in expanding this project, we look for the following contributions:
+
+1. New WAF adapters
+1. New mutation operators
+1. New search algorithms
+
+# Team
+
+[Andrea Valenza](https://avalz.it/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
+[Luca Demetrio](https://zangobot.github.io/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
+[Gabriele Costa](https://www.imtlucca.it/it/gabriele.costa) - [SysMA](http://sysma.imtlucca.it/), [IMT Lucca](https://www.imtlucca.it/)
+[Giovanni Lagorio](https://csec.it/people/giovanni_lagorio/) - [CSecLab](https://csec.it/), DIBRIS, University of Genova
 
