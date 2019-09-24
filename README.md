@@ -1,6 +1,6 @@
 # WAF-A-MoLE
 
-A *guided mutation-based fuzzer* for ML-based Web Application Firewalls, inspired by AFL and based on the [FuzzingBook](https://www.fuzzingbook.org) from Andreas Zeller et al.
+A *guided mutation-based fuzzer* for ML-based Web Application Firewalls, inspired by AFL and based on the [FuzzingBook](https://www.fuzzingbook.org) by Andreas Zeller et al.
 
 Given an input SQL injection query, it tries to produce a *semantic invariant* query that is able to bypass the target WAF.
 You can use this tool for assessing the robustness of your product by letting WAF-A-MoLE explore the solution space to find dangerous "blind spots" left uncovered by the target classifier.
@@ -20,7 +20,7 @@ During each iteration, the head of the payload Pool is passed to the **Fuzzer**,
 
 ## Mutation operators
 
-Mutations operators are all *semantics preserving* and they leverage the flexibility of the SQL language (in this version, MySQL).
+Mutations operators are all *semantics-preserving* and they leverage the high expressive power of the SQL language (in this version, MySQL).
 
 Below are the mutation operators available in the current version of WAF-A-MoLE.
 
