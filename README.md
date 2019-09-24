@@ -3,7 +3,7 @@
 A *guided mutation-based fuzzer* for ML-based Web Application Firewalls, inspired by AFL and based on the [FuzzingBook](https://www.fuzzingbook.org) from Andreas Zeller et al.
 
 Given an input SQL injection query, it tries to produce a *semantics-invariant* query that is able to bypass the target WAF.
-You can use this tool for assesting the robustness of your product by letting WAF-A-MoLE exploring the space of solution to find dangerous "blind spots" left uncovered by the target classifier.
+You can use this tool for assessing the robustness of your product by letting WAF-A-MoLE explore the solution space to find dangerous "blind spots" left uncovered by the target classifier.
 
 
 [![Python Version](https://img.shields.io/badge/Python-3.7-green.svg)](https://www.python.org/downloads/release/python-374/)
@@ -13,9 +13,9 @@ You can use this tool for assesting the robustness of your product by letting WA
 
 ![WAF-A-MoLE Architecture](docs/fig/WAF-A-MoLE.png)
 
-WAF-A-MoLE takes an initial payload and inserts it in the payload **Pool**, which manages a priority queue ordered on the WAF confidence score over each payload.
+WAF-A-MoLE takes an initial payload and inserts it in the payload **Pool**, which manages a priority queue ordered by the WAF confidence score over each payload.
 
-During each iteration, the head of the payload Pool is passed to the **Fuzzer** and it is randomly mutated, applying one of the available mutation operators.
+During each iteration, the head of the payload Pool is passed to the **Fuzzer**, where it gets randomly mutated, by applying one of the available mutation operators.
 
 
 ## Mutation operators
@@ -24,15 +24,15 @@ Mutations operators are all *semantics preserving* and they leverage the flexibi
 
 Below are the mutation operators available in the current version of WAF-A-MoLE.
 
-| Mutation | Example | 
+| Mutation | Example |
 | --- | --- |
 |  Case Swapping | `admin' OR 1=1#` ⇒ `admin' oR 1=1#` |
-| Whitespace Substitution | `admin' OR 1=1#` ⇒ `admin'\t\rOR\n1=1#`| 
+| Whitespace Substitution | `admin' OR 1=1#` ⇒ `admin'\t\rOR\n1=1#`|
 | Comment Injection | `admin' OR 1=1#` ⇒ `admin'/**/OR 1=1#`|
 | Comment Rewriting | `admin'/**/OR 1=1#` ⇒ `admin'/*xyz*/OR 1=1#abc`|
-| Integer Encoding | `admin' OR 1=1#` ⇒ `admin' OR 0x1=(SELECT 1)#`| 
-| Operator Swapping | `admin' OR 1=1#` ⇒ `admin' OR 1 LIKE 1#`| 
-| Logical Invariant | `admin' OR 1=1#` ⇒ `admin' OR 1=1 AND 0<1#`| 
+| Integer Encoding | `admin' OR 1=1#` ⇒ `admin' OR 0x1=(SELECT 1)#`|
+| Operator Swapping | `admin' OR 1=1#` ⇒ `admin' OR 1 LIKE 1#`|
+| Logical Invariant | `admin' OR 1=1#` ⇒ `admin' OR 1=1 AND 0<1#`|
 
 
 # Running WAF-A-MoLE
@@ -54,12 +54,12 @@ Below are the mutation operators available in the current version of WAF-A-MoLE.
 ## Sample Usage
 
 You can evaluate the robustness of your own WAF, or try WAF-A-MoLE against some example classifiers.
-In the first case, have a look at the [Model](https://github.com/AvalZ/waf-a-mole/blob/master/wafamole/models/model.py) class. Your custom model need to implement this class in order to be evaluated by WAF-A-MoLE.
+In the first case, have a look at the [Model](https://github.com/AvalZ/waf-a-mole/blob/master/wafamole/models/model.py) class. Your custom model needs to implement this class in order to be evaluated by WAF-A-MoLE.
 We already provide wrappers for *sci-kit learn* and *keras* classifiers that can be extend to fit your feature extraction phase (if any).
 
 ### Help
 
-`wafamole --help` 
+`wafamole --help`
 ```
 Usage: wafamole [OPTIONS] COMMAND [ARGS]...
 
@@ -71,7 +71,7 @@ Commands:
 ```
 
 
-`wafamole evade --help` 
+`wafamole evade --help`
 ```
 Usage: wafamole evade [OPTIONS] MODEL_PATH PAYLOAD
 
@@ -94,17 +94,17 @@ Options:
 
 ### Evading example models
 
-We provide some pre-trained model you can have fun with, located in [wafamole/models/custom/example_models](https://github.com/AvalZ/waf-a-mole/tree/master/wafamole/models/custom/example_models).
+We provide some pre-trained models you can have fun with, located in [wafamole/models/custom/example_models](https://github.com/AvalZ/waf-a-mole/tree/master/wafamole/models/custom/example_models).
 The classifiers we used are listed in the table below.
 
 | Classifier name| Algorithm
 | --- | --- |
-| [WafBrain](https://github.com/BBVA/waf-brain) | Recurrent Neural Network| 
-| Token-based | Naive Bayes | 
-| Token-based | Random Forest | 
-| Token-based | Linear SVM | 
-| Token-based | Gaussian SVM | 
-| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Proportional | Gaussian SVM | 
+| [WafBrain](https://github.com/BBVA/waf-brain) | Recurrent Neural Network|
+| Token-based | Naive Bayes |
+| Token-based | Random Forest |
+| Token-based | Linear SVM |
+| Token-based | Gaussian SVM |
+| [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Proportional | Gaussian SVM |
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Directed Unproportional | Gaussian SVM |
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Proportional | Gaussian SVM |
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Unproportional | Gaussian SVM |
@@ -160,7 +160,7 @@ wafamole evade --model-type DP wafamole/models/custom/example_models/graph_direc
 
 **BEFORE LAUNCHING EVALUATION ON SQLiGoT**
 
-These classifiers are more robust with respect to the others, as the feature extraction phase produce vectors with more complex structure, and all the pre-trained classifiers have been strongly regularized.
+These classifiers are more robust than the others, as the feature extraction phase produces vectors with a more complex structure, and all pre-trained classifiers have been strongly regularized.
 It may take hours for some variants to produce a payload that achieves evasion (see Benchmark section).
 
 # Benchmark
@@ -183,7 +183,7 @@ Experiments were performed on [DigitalOcean *Standard* Droplets](https://www.dig
 
 Questions, bug reports and pull requests are welcome.
 
-In particular, if you are intrested in expanding this project, we look for the following contributions:
+In particular, if you are interested in expanding this project, we look for the following contributions:
 
 1. New WAF adapters
 1. New mutation operators
