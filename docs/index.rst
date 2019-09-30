@@ -16,7 +16,7 @@ uncovered by the target classifier.
 Architecture
 ============
 
-.. figure:: docs/fig/WAF-A-MoLE.png
+.. figure:: fig/WAF-A-MoLE.png
    :alt: WAF-A-MoLE Architecture
 
    WAF-A-MoLE Architecture
