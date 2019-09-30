@@ -29,6 +29,7 @@ During each iteration, the head of the payload Pool is passed to the
 **Fuzzer**, where it gets randomly mutated, by applying one of the
 available mutation operators.
 
+
 Mutation operators
 ------------------
 
@@ -49,6 +50,16 @@ Integer Encoding        ``admin' OR 1=1#`` ⇒ ``admin' OR 0x1=(SELECT 1)#``
 Operator Swapping       ``admin' OR 1=1#`` ⇒ ``admin' OR 1 LIKE 1#``
 Logical Invariant       ``admin' OR 1=1#`` ⇒ ``admin' OR 1=1 AND 0<1#``
 ======================= ===================================================
+
+Components
+----------
+
+.. toctree::
+   :maxdepth: 10
+   :caption: Contents:
+
+   source/modules
+
 
 Running WAF-A-MoLE
 ==================
