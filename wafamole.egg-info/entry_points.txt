@@ -1,4 +1,0 @@
-
-        [console_scripts]
-        wafamole=wafamole.cli:wafamole
-    

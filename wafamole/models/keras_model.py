@@ -69,6 +69,8 @@ class KerasModelWrapper(Model):
         Returns:
             the confidence for each class of the problem.
         """
+        if type(value) != np.ndarray:
+            raise TypeError(f"{type(value)} not an ndarray")
         if self._keras_classifier is None:
             raise ModelNotLoadedError()
         feature_vector = self.extract_features(value)
@@ -87,6 +89,8 @@ class KerasModelWrapper(Model):
         Returns:
             numpy ndarray : the input.
         """
+        if type(value) != np.ndarray:
+            raise TypeError(f"{type(value)} not an nd array")
         return value
 
     def load(self, filepath):

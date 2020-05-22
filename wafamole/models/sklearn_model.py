@@ -120,4 +120,6 @@ class SklearnModelWrapper(Model):
         Returns:
             the input.
         """
+        if type(value) != np.ndarray:
+            raise TypeError(f"{type(value)} not an nd array")
         return value

@@ -44,7 +44,7 @@ class SklearnWrapperTest(unittest.TestCase):
             def fit():
                 pass
 
-        self.assertRaises(NotSklearnModelError, SklearnModelWrapper, wrong_object())
+        self.assertRaises(NotSklearnModelError, SklearnModelWrapper, SklearnModelWrapper(wrong_object()))
 
     def test_object_probability_decision_function_ok(self):
         class test_object:

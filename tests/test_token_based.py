@@ -14,7 +14,7 @@ class TokenClassifierTest(unittest.TestCase):
 
         clf = TokenClassifierWrapper(test_object())
         query = "select * from a"
-        expected = np.array([0, 2, 1, 0, 0, 0, 0, 0, 1, 0, 0])
+        expected = np.array([0, 2, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0])
         actual = clf.extract_features(query)
         self.assertTrue((actual == expected).all())
 

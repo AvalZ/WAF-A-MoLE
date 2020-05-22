@@ -277,11 +277,11 @@ class SQLiGoT(SVC):
         ):
             X_benign = np.load(benign_filepath)
             X_sqlia = np.load(sqlia_filepath)
+            if balance:
+                X_benign, X_sqlia = self._balance_data(X_benign, X_sqlia)
             X = np.vstack((X_benign, X_sqlia))
             y = np.ones(len(X_benign) + len(X_sqlia))
             y[: len(X_benign)] = -1
-            if balance:
-                X_benign, X_sqlia = self._balance_data(X_benign, X_sqlia)
             return X, y
         else:
             X_benign = self._create_feature_vectors_from_file(

@@ -1,0 +1,10 @@
+
+.idea/
+
+dist/
+
+wafamole/__pycache__/
+
+wafamole.egg-info/
+
+build/
