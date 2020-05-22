@@ -123,7 +123,7 @@ wafamole evade --model-type waf-brain wafamole/models/custom/example_models/waf-
 Bypass the pre-trained token-based Naive Bayes classifier using a `admin' OR 1=1#` equivalent.
 
 ```bash
-wafamole evade --model-type token wafamole/models/custom/example_models/nb_trained.dump  "admin' OR 1=1#"
+wafamole evade --model-type token wafamole/models/custom/example_models/naive_bayes_trained.dump  "admin' OR 1=1#"
 ```
 
 #### Token-based - Random Forest
@@ -131,7 +131,7 @@ wafamole evade --model-type token wafamole/models/custom/example_models/nb_train
 Bypass the pre-trained token-based Random Forest classifier using a `admin' OR 1=1#` equivalent.
 
 ```bash
-wafamole evade --model-type token wafamole/models/custom/example_models/rf_trained.dump  "admin' OR 1=1#"
+wafamole evade --model-type token wafamole/models/custom/example_models/random_forest_trained.dump  "admin' OR 1=1#"
 ```
 
 #### Token-based - Linear SVM
