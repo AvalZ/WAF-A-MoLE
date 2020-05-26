@@ -164,6 +164,31 @@ wafamole evade --model-type DP wafamole/models/custom/example_models/graph_direc
 These classifiers are more robust than the others, as the feature extraction phase produces vectors with a more complex structure, and all pre-trained classifiers have been strongly regularized.
 It may take hours for some variants to produce a payload that achieves evasion (see Benchmark section).
 
+### Custom adapters
+
+First, create a custom Model class that implements the `extract_features` and `classify` methods.
+
+```python
+class YourCustomModel(Model):
+    def extract_features(self, value: str):
+    	# TODO: extract features
+        feature_vector = your_custom_feature_function(value)
+        return feature_vector
+
+    def classify(self, value):
+    	# TODO: compute confidence
+        confidence = your_confidence_eval(value)
+        return confidence
+```
+
+Then, create an object from the model and instantiate an `engine` object that uses your model class.
+
+```python
+model = YourCustomModel() #your init
+engine = EvasionEngine(model)
+result = engine.evaluate(payload, max_rounds, round_size, timeout, threshold)
+```
+
 # Benchmark
 
 We evaluated WAF-A-MoLE against all our example models.
