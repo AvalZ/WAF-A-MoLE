@@ -29,8 +29,6 @@ class Model(metaclass=abc.ABCMeta):
             value (object) : Input value
 
         Returns:
-            numpy ndarray : the confidence for each class of the classifier.
-            If binary classifications, it returns a [1,2] matrix, where the first entry is probability of being 0 and
-            the second entry is the probability of being 1 (namely, (1-p, p))
+            float : the confidence of the malicious class.
         """
         raise NotImplementedError("classify not implemented in abstract class")
