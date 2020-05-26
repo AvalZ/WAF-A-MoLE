@@ -25,35 +25,8 @@ class KerasModelWrapper(Model):
         else:
             if getattr(keras_classifier, "predict", None) is None:
                 raise NotKerasModelError("object does not implement predict function")
-            if getattr(keras_classifier, "fit", None) is None:
-                raise NotKerasModelError("object does not implement fit function")
             self._keras_classifier = keras_classifier
 
-    def fit(self, X, Y, **kwargs):
-        """Fit the internal keras classifier given as input in the constructor.
-        
-        Arguments:
-            X (numpy ndarray) : training data
-            Y (numpy ndarray) : training label
-
-        Raises:
-            TypeError: X, Y not numpy ndarray
-            ModelNotLoadedError: calling function without having loaded or passed model as arg
-
-        Returns:
-            self
-        """
-        if self._keras_classifier is None:
-            raise ModelNotLoadedError()
-        type_check(X, np.ndarray, "X")
-        type_check(Y, np.ndarray, "Y")
-        try:
-            self._keras_classifier.fit(X, Y, **kwargs)
-            return self
-        except Exception as e:
-            raise KerasInternalError(
-                "Keras internal error. See inner exception for details."
-            ) from e
 
     def classify(self, value):
         """It returns the probability of belonging to a particular class.

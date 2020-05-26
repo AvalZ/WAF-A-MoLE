@@ -17,7 +17,7 @@ class SklearnModelWrapper(Model):
 
     def __init__(self, sklearn_classifier=None):
         """Constructs a wrapper around an scikit-learn classifier, or equivalent.
-        It must implement fit and predict_proba function.
+        It must implement predict_proba function.
         
         Arguments:
             sklearn_classifier (sci-kit learn classifier):  scikit-learn classifier or equivalent
@@ -33,38 +33,9 @@ class SklearnModelWrapper(Model):
                 raise NotSklearnModelError(
                     "object does not implement predict_proba function"
                 )
-            if getattr(sklearn_classifier, "fit", None) is None:
-                raise NotSklearnModelError("object does not implement fit function")
 
             self._sklearn_classifier = sklearn_classifier
 
-    def fit(self, X, Y):
-        """Fit the internal scikit-learn classifier given as input in the constructor.
-        
-        Arguments:
-            X (numpy ndarray): training data
-            Y (numpy ndarray): training label
-
-        Raises:
-            TypeError: X, Y not numpy ndarray
-            ModelNotLoadedError: calling function without having loaded or passed model as arg
-
-        Returns:
-            self
-        """
-        if self._sklearn_classifier is None:
-            raise ModelNotLoadedError()
-        if not isinstance(X, np.ndarray):
-            raise TypeError("X not an ndarray but {}".format(type(X)))
-        if not isinstance(Y, np.ndarray):
-            raise TypeError("Y not an ndarray but {}".format(type(Y)))
-        try:
-            self._sklearn_classifier.fit(X, Y)
-        except Exception as e:
-            raise SklearnInternalError(
-                "Error in fit. Open inner exception to understand the error."
-            ) from e
-        return self
 
     def classify(self, value):
         """It returns the probability of belonging to a particular class.

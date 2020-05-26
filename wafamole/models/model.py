@@ -6,22 +6,6 @@ class Model(metaclass=abc.ABCMeta):
     """Abstract machine learning model wrapper."""
 
     @abc.abstractmethod
-    def fit(self, X, Y):
-        """Fit the wrapped model by feeding it with X and Y.
-
-        Arguments:
-            X (list of data samples) : the training data
-            Y (list of classes) : the training labels
-
-        Returns:
-            self
-
-        Raises:
-            NotImplementedError: this method needs to be implemented
-        """
-        raise NotImplementedError("fit not implemented in abstract class")
-
-    @abc.abstractmethod
     def extract_features(self, value: object):
         """It extract a feature vector from the input object.
 

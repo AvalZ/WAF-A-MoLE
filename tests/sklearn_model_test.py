@@ -1,22 +1,20 @@
-import unittest
-import joblib
 import os
+import unittest
+
+import joblib
 import numpy as np
-from wafamole.models import SklearnModelWrapper
+
 from wafamole.exceptions.models_exceptions import (
     NotSklearnModelError,
-    SklearnInternalError,
-    ModelNotLoadedError
+    SklearnInternalError
 )
+from wafamole.models import SklearnModelWrapper
 
 
 class SklearnWrapperTest(unittest.TestCase):
     def setUp(self):
         class test_object:
             def predict_proba(self):
-                pass
-
-            def fit(self):
                 pass
 
         self.root_module_path = os.path.dirname(
@@ -41,9 +39,6 @@ class SklearnWrapperTest(unittest.TestCase):
             def predict_proba():
                 pass
 
-            def fit():
-                pass
-
         self.assertRaises(NotSklearnModelError, SklearnModelWrapper, SklearnModelWrapper(wrong_object()))
 
     def test_object_probability_decision_function_ok(self):
@@ -57,22 +52,15 @@ class SklearnWrapperTest(unittest.TestCase):
             def decision_function(self):
                 pass
 
-            def fit(self):
-                pass
-
         _ = SklearnModelWrapper(test_object())
         self.assertTrue(True)
 
-    def test_object_without_fit_throws_exception(self):
-        class test_object:
-            def fit(self):
-                pass
-
-        self.assertRaises(NotSklearnModelError, SklearnModelWrapper, test_object())
-
     def test_object_without_predict_proba_throws_exception(self):
         class test_object:
-            def predict_proba(self):
+            def __init__(self):
+                self.probability = True
+
+            def decision_function(self):
                 pass
 
         self.assertRaises(NotSklearnModelError, SklearnModelWrapper, test_object())
@@ -81,7 +69,7 @@ class SklearnWrapperTest(unittest.TestCase):
         wrapper = SklearnModelWrapper(self.compliant_object)
         self.assertRaises(TypeError, wrapper.load, 12)
 
-    def test_load_no_regular_file_passed_throws_exception(self):
+    def test_load_no_regular_file_passed_throws_not_exists_exception(self):
         wrapper = SklearnModelWrapper(self.compliant_object)
         self.assertRaises(FileNotFoundError, wrapper.load, "not exists")
 
@@ -108,7 +96,7 @@ class SklearnWrapperTest(unittest.TestCase):
 
     def test_classify_ok(self):
         wrapper = SklearnModelWrapper(self.test_sklearn_model)
-        confidence = wrapper.classify(self.test_sample)
+        wrapper.classify(self.test_sample)
         self.assertTrue(True)
 
     def test_extract_features_no_array_throws_exception(self):
@@ -120,30 +108,6 @@ class SklearnWrapperTest(unittest.TestCase):
         feat_vector = wrapper.extract_features(self.test_sample)
         self.assertTrue((feat_vector == self.test_sample).all())
 
-    def test_fit_no_X_array_throws_exception(self):
-        wrapper = SklearnModelWrapper(self.compliant_object)
-        self.assertRaises(TypeError, wrapper.fit, *[0, self.test_Y])
-
-    def test_fit_no_Y_array_throws_exception(self):
-        wrapper = SklearnModelWrapper(self.compliant_object)
-        self.assertRaises(TypeError, wrapper.fit, *[self.test_X, 0])
-
-    def test_fit_invalid_input_throws_exception(self):
-        wrapper = SklearnModelWrapper(self.compliant_object)
-        self.assertRaises(
-            SklearnInternalError, wrapper.fit, *[self.test_X, np.zeros((100, 100))]
-        )
-
-    def test_fit_no_model_throws_exception(self):
-        wrapper = SklearnModelWrapper()
-        self.assertRaises(
-            ModelNotLoadedError, wrapper.fit, *[self.test_X, np.zeros((100, 100))]
-        )
-
-    def test_fit_ok(self):
-        wrapper = SklearnModelWrapper(self.test_sklearn_model)
-        wrapper.fit(self.test_X, self.test_Y)
-        self.assertTrue(True)
 
 
 if __name__ == "__main__":

@@ -14,9 +14,6 @@ class KerasWrapperTest(unittest.TestCase):
             def predict(self):
                 pass
 
-            def fit(self):
-                pass
-
         self.compliant_object = test_object()
         self.root_module_path = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))
@@ -30,17 +27,10 @@ class KerasWrapperTest(unittest.TestCase):
         self.test_Y = np.zeros(100)
         return super().setUp()
 
-    def test_object_without_fit_throws_exception(self):
-        class test_object:
-            def fit():
-                pass
 
-        self.assertRaises(NotKerasModelError, KerasModelWrapper, test_object())
-
-    def test_object_without_predict_proba_throws_exception(self):
+    def test_object_without_predict_throws_exception(self):
         class test_object:
-            def predict():
-                pass
+            pass
 
         self.assertRaises(NotKerasModelError, KerasModelWrapper, test_object())
 
@@ -48,7 +38,7 @@ class KerasWrapperTest(unittest.TestCase):
         wrapper = KerasModelWrapper(self.compliant_object)
         self.assertRaises(TypeError, wrapper.load, 12)
 
-    def test_load_no_regular_file_passed_throws_exception(self):
+    def test_load_no_regular_file_passed_throws_not_exists_exception(self):
         wrapper = KerasModelWrapper(self.compliant_object)
         self.assertRaises(FileNotFoundError, wrapper.load, "not exists")
 
@@ -75,7 +65,7 @@ class KerasWrapperTest(unittest.TestCase):
 
     def test_classify_ok(self):
         wrapper = KerasModelWrapper(self.test_keras_model)
-        confidence = wrapper.classify(self.test_sample)
+        wrapper.classify(self.test_sample)
         self.assertTrue(True)
 
     def test_extract_features_no_array_throws_exception(self):
@@ -86,25 +76,6 @@ class KerasWrapperTest(unittest.TestCase):
         wrapper = KerasModelWrapper(self.compliant_object)
         feat_vector = wrapper.extract_features(self.test_sample)
         self.assertTrue((feat_vector == self.test_sample).all())
-
-    def test_fit_no_X_array_throws_exception(self):
-        wrapper = KerasModelWrapper(self.compliant_object)
-        self.assertRaises(TypeError, wrapper.fit, *[0, self.test_Y])
-
-    def test_fit_no_Y_array_throws_exception(self):
-        wrapper = KerasModelWrapper(self.compliant_object)
-        self.assertRaises(TypeError, wrapper.fit, *[self.test_X, 0])
-
-    def test_fit_invalid_input_throws_exception(self):
-        wrapper = KerasModelWrapper(self.compliant_object)
-        self.assertRaises(
-            KerasInternalError, wrapper.fit, *[self.test_X, np.zeros((100, 100))]
-        )
-
-    def test_fit_ok(self):
-        wrapper = KerasModelWrapper(self.test_keras_model)
-        wrapper.fit(self.test_X, self.test_Y)
-        self.assertTrue(True)
 
 
 if __name__ == "__main__":

@@ -32,4 +32,4 @@ class CoreEngine(object, metaclass=ABCMeta):
 		Returns:
 			float, str : minimum confidence and correspondent payload that achieve that score
 		"""
-		raise NotImplementedError("");
+		raise NotImplementedError("")
