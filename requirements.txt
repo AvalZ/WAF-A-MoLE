@@ -5,3 +5,4 @@ joblib
 sqlparse
 networkx
 click
+tensorflow
