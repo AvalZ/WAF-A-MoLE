@@ -35,6 +35,20 @@ Below are the mutation operators available in the current version of WAF-A-MoLE.
 | Operator Swapping | `admin' OR 1=1#` ⇒ `admin' OR 1 LIKE 1#`|
 | Logical Invariant | `admin' OR 1=1#` ⇒ `admin' OR 1=1 AND 0<1#`|
 
+# How to cite us
+
+WAF-A-MoLE implements the methodology presented in ["WAF-A-MoLE: Evading Web Application Firewalls through Adversarial Machine Learning"](https://www.researchgate.net/publication/340917525_WAF-A-MoLE_Evading_Web_Application_Firewalls_through_Adversarial_Machine_Learning).
+
+If you want to cite us, please use the following (BibTeX) reference:
+```
+@inproceedings{demetrio20wafamole,
+  title={WAF-A-MoLE: evading web application firewalls through adversarial machine learning},
+  author={Demetrio, Luca and Valenza, Andrea and Costa, Gabriele and Lagorio, Giovanni},
+  booktitle={Proceedings of the 35th Annual ACM Symposium on Applied Computing},
+  pages={1745--1752},
+  year={2020}
+}
+```
 
 # Running WAF-A-MoLE
 
