@@ -37,7 +37,7 @@ Below are the mutation operators available in the current version of WAF-A-MoLE.
 
 # How to cite us
 
-WAF-A-MoLE implements the methodology presented in ["WAF-A-MoLE: Evading Web Application Firewalls through Adversarial Machine Learning"](https://dl.acm.org/doi/abs/10.1145/3341105.3373962)]).
+WAF-A-MoLE implements the methodology presented in ["WAF-A-MoLE: Evading Web Application Firewalls through Adversarial Machine Learning"](https://dl.acm.org/doi/abs/10.1145/3341105.3373962).
 A pre-print of our article can also be found on [arXiv](https://arxiv.org/abs/2001.01952).
 
 If you want to cite us, please use the following (BibTeX) reference:
