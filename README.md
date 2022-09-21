@@ -144,7 +144,6 @@ Bypass the pre-trained ML-Based-WAF SVM classifier using a `admin' OR 1=1#` equi
 
 ```bash
 wafamole evade --model-type mlbasedwaf wafamole/models/custom/example_models/mlbasedwaf_svc.dump  "admin' OR 1=1#"
-
 ```
 
 #### ML-Based-WAF - Non-Linear SVM (with SQLiV5/SQLiV3 datasets)
@@ -163,7 +162,6 @@ wafamole evade --model-type mlbasedwaf wafamole/models/custom/example_models/mlb
 
 #### ML-Based-WAF - AdaBoost
 Bypass the pre-trained ML-Based-WAF AdaBoost classifier using a `admin' OR 1=1#` equivalent (takes longer than other models, at around 2 to 5 minutes of runtime). 
-
 
 ```bash
 wafamole evade --model-type mlbasedwaf wafamole/models/custom/example_models/mlbasedwaf_ada.dump  "admin' OR 1=1#"
@@ -216,11 +214,9 @@ It may take hours for some variants to produce a payload that achieves evasion (
 
 **Note on newer ML-Based-WAF models**
 
-Some models based on a slightly modified version of vladan-stojnic's [ML-Based-WAF](https://github.com/vladan-stojnic/ML-based-WAF) have been recently added, from an extension of WAF-A-MoLE entitled [wafamole++](https://github.com/nidnogg/wafamole-plusplus) by [nidnogg](https://github.com/nidnogg). 
+Some models based on a slightly modified version of vladan-stojnic's [ML-Based-WAF](https://github.com/vladan-stojnic/ML-based-WAF) have been recently added, from an extension of WAF-A-MoLE entitled [wafamole++](https://github.com/nidnogg/wafamole-plusplus) by [nidnogg](https://github.com/nidnogg). Testing the AdaBoost model might take a longer time than usual (usually 2 to 5 minutes).
 
-Testing the AdaBoost model might take a longer time than usual (usually 2 to 5 minutes).
-
-There are variants trained with the [SQLiV5.json](https://github.com/nidnogg/sqliv5-dataset) dataset, while most use the original SQL injection from WAF-A-MoLE dataset by default.
+There are variants trained with the [SQLiV5.json](https://github.com/nidnogg/sqliv5-dataset) dataset, while most use the original SQL injection from WAF-A-MoLE dataset by default. 
 
 A Google Colaboratory [notebook](https://colab.research.google.com/drive/1YPHb8lrbxN6RjJWjwvM1upvsVoV7de8r?usp=sharing) is provided with the training routines for some of these models, using the original WAF-A-MoLE dataset (modified to the SQLiV5 format). Any dataset can be used as long as they're in the same format as SQLiV5.json.
 
