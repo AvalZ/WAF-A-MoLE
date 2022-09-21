@@ -143,7 +143,8 @@ wafamole evade --model-type waf-brain wafamole/models/custom/example_models/waf-
 Bypass the pre-trained ML-Based-WAF SVM classifier using a `admin' OR 1=1#` equivalent. 
 
 ```bash
-wafamole evade --model-type ML-Based-WAF wafamole/models/custom/example_models/mlbasedwaf_svc.dump  "admin' OR 1=1#"
+wafamole evade --model-type mlbasedwaf wafamole/models/custom/example_models/mlbasedwaf_svc.dump  "admin' OR 1=1#"
+
 ```
 
 #### ML-Based-WAF - Non-Linear SVM (with SQLiV5/SQLiV3 datasets)
