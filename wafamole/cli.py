@@ -3,8 +3,7 @@ import pickle
 from wafamole.evasion import EvasionEngine
 from wafamole.evasion.random import RandomEvasionEngine
 from wafamole.exceptions.models_exceptions import UnknownModelError
-from wafamole.models import TokenClassifierWrapper, WafBrainWrapper, SQLiGoTWrapper
-
+from wafamole.models import TokenClassifierWrapper, WafBrainWrapper, SQLiGoTWrapper, MLBasedWAFWrapper
 
 @click.group()
 def wafamole():
@@ -51,6 +50,8 @@ def evade(
 ):
     if model_type == "token":
         model = TokenClassifierWrapper().load(model_path)
+    elif model_type == "mlbasedwaf":
+        model = MLBasedWAFWrapper().load(model_path)
     elif model_type == "UU":
         model = SQLiGoTWrapper(undirected=True, proportional=False).load(model_path)
     elif model_type == "UP":

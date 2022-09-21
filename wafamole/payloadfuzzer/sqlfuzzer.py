@@ -2,6 +2,7 @@
 
 import random
 import re
+import string
 from wafamole.payloadfuzzer.fuzz_utils import (
     replace_random,
     filter_candidates,
@@ -222,6 +223,64 @@ def swap_keywords(payload):
     # Apply mutation at one random occurrence in the payload
     return replace_random(payload, candidate_symbol, candidate_replacement)
 
+def shuffle_integers(payload):
+    candidates = list(re.finditer(r'[0-9]', payload))
+
+    if not candidates:
+        return payload
+
+    candidate_pos = random.choice(candidates).span()
+
+    return payload[: candidate_pos[0]] + str(random.choice(range(10))) + payload[candidate_pos[1]:]
+
+def shuffle_bases(payload):
+    candidates = list(re.finditer(r'[0-9]+', payload))
+
+    if not candidates:
+        return payload
+    candidate_pos = random.choice(candidates).span()
+    candidate = payload[candidate_pos[0]:candidate_pos[1]]
+
+    replacements = [
+        bin(int(candidate)),
+        int(candidate),
+        oct(int(candidate)),
+        hex(int(candidate)),
+    ]
+
+    replacement = random.choice(replacements)
+
+    if (str(candidate) == str(replacement)):
+        return payload
+
+    return payload[:candidate_pos[0]] + str(replacement) + payload[candidate_pos[1]:]
+
+def spaces_to_symbols(payload):
+    excluded_characters = '[^a-zA-Z0-9]'
+    r = re.compile(excluded_characters)
+    symbols_to_try = []
+
+    for symbol in string.punctuation:
+        symbols_to_try.append(symbol)
+        
+    symbols_to_try = list(filter(r.match, symbols_to_try))
+
+    symbols = {" ": symbols_to_try}
+
+    symbols_in_payload = filter_candidates(symbols, payload)
+
+    if not symbols_in_payload:
+            return payload
+
+    # Randomly choose symbol
+    candidate_symbol = random.choice(symbols_in_payload)
+    # Check for possible replacements
+    replacements = symbols[candidate_symbol]
+    # Choose one replacement randomly
+    candidate_replacement = random.choice(replacements)
+
+    # Apply mutation at one random occurrence in the payload
+    return replace_random(payload, candidate_symbol, candidate_replacement)
 
 class SqlFuzzer(object):
     """SqlFuzzer class"""
@@ -236,6 +295,9 @@ class SqlFuzzer(object):
         change_tautologies,
         logical_invariant,
         reset_inline_comments,
+        shuffle_integers,
+        shuffle_bases,
+        spaces_to_symbols
     ]
 
     def __init__(self, payload):
