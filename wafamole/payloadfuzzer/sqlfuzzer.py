@@ -224,63 +224,61 @@ def swap_keywords(payload):
     return replace_random(payload, candidate_symbol, candidate_replacement)
 
 def shuffle_integers(payload):
-    candidates = list(re.finditer(r'[0-9]', payload))
+    """shuffle_integers
 
-    if not candidates:
-        return payload
+    Replace number=number or number LIKE number cases with a digit + letter combination of the number's size
 
-    candidate_pos = random.choice(candidates).span()
+    e.g. SELECT admins FROM (SELECT * FROM user WHERE 1782 LIKE 1782) WHERE 999=122
+    could become SELECT admins FROM (SELECT * FROM user WHERE a1H9 LIKE a1H9) WHERE 999=122
 
-    return payload[: candidate_pos[0]] + str(random.choice(range(10))) + payload[candidate_pos[1]:]
+    :param payload:
+    """
 
-def shuffle_bases(payload):
     candidates = list(re.finditer(r'[0-9]+', payload))
 
     if not candidates:
         return payload
-    candidate_pos = random.choice(candidates).span()
-    candidate = payload[candidate_pos[0]:candidate_pos[1]]
 
-    replacements = [
-        bin(int(candidate)),
-        int(candidate),
-        oct(int(candidate)),
-        hex(int(candidate)),
-    ]
+    possible_equal_pairs = []
+    for i in range(len(candidates)):
+        candidate_pos = candidates[i].span()
+        # Don't test for = or LIKE in last candidate for out of bounds index
+        if (i == len(candidates) - 1):
+            continue
+        elif (payload[candidate_pos[1]] == '=' 
+            or payload[candidate_pos[1]+1:candidate_pos[1]+5] == 'LIKE' ):
+            candidate_pair = [candidates[i].span(), candidates[i+1].span()]
+            possible_equal_pairs.append(candidate_pair)
 
-    replacement = random.choice(replacements)
+    definite_equal_pairs = []
+    for pair in possible_equal_pairs:
+        first_candidate_pos = pair[0]
+        second_candidate_pos = pair[1]
 
-    if (str(candidate) == str(replacement)):
-        return payload
+        # Verify that an equal pair of numbers exist
+        if (payload[first_candidate_pos[0]:first_candidate_pos[1]] 
+            == payload[second_candidate_pos[0]:second_candidate_pos[1]]):
+            definite_equal_pairs.append(pair)
 
-    return payload[:candidate_pos[0]] + str(replacement) + payload[candidate_pos[1]:]
+    # Nothing gets replaced if no equal pairs are confirmed
+    if (len(definite_equal_pairs) < 1 or not definite_equal_pairs):
+        return payload 
 
-def spaces_to_symbols(payload):
-    excluded_characters = '[^a-zA-Z0-9]'
-    r = re.compile(excluded_characters)
-    symbols_to_try = []
+    pair_to_replace = random.choice(definite_equal_pairs)
 
-    for symbol in string.punctuation:
-        symbols_to_try.append(symbol)
-        
-    symbols_to_try = list(filter(r.match, symbols_to_try))
+    # Build a digit/letter replacement with the size of the paired numbers
+    single_replacements = list(string.ascii_letters) + list(range(0,10))
+    replacement_size = pair_to_replace[0][1] - pair_to_replace[0][0]
+    replacement = ''
+    for i in range(replacement_size):
+        replacement_unit = str(random.choice(single_replacements))    
+        replacement += replacement_unit
 
-    symbols = {" ": symbols_to_try}
+    for candidate_pos in pair_to_replace:
+        payload = payload[:candidate_pos[0]] + replacement + payload[candidate_pos[1]:]
+    
+    return payload
 
-    symbols_in_payload = filter_candidates(symbols, payload)
-
-    if not symbols_in_payload:
-            return payload
-
-    # Randomly choose symbol
-    candidate_symbol = random.choice(symbols_in_payload)
-    # Check for possible replacements
-    replacements = symbols[candidate_symbol]
-    # Choose one replacement randomly
-    candidate_replacement = random.choice(replacements)
-
-    # Apply mutation at one random occurrence in the payload
-    return replace_random(payload, candidate_symbol, candidate_replacement)
 
 class SqlFuzzer(object):
     """SqlFuzzer class"""
@@ -296,8 +294,6 @@ class SqlFuzzer(object):
         logical_invariant,
         reset_inline_comments,
         shuffle_integers,
-        shuffle_bases,
-        spaces_to_symbols
     ]
 
     def __init__(self, payload):
