@@ -4,6 +4,11 @@ from wafamole.evasion import EvasionEngine
 from wafamole.evasion.random import RandomEvasionEngine
 from wafamole.exceptions.models_exceptions import UnknownModelError
 from wafamole.models import TokenClassifierWrapper, WafBrainWrapper, SQLiGoTWrapper, MLBasedWAFWrapper
+try:
+    from wafamole.models.modsec_wrapper import PyModSecurityWrapper
+except ImportError:
+    # ModSecurity module is not available
+    pass
 
 @click.group()
 def wafamole():
@@ -35,7 +40,7 @@ def wafamole():
     default=None,
     help="Location were to save the results of the random engine. NOT USED WITH REGULAR EVOLUTION ENGINE",
 )
-@click.argument("model-path")
+@click.argument("model-path", default="")
 @click.argument("payload")
 def evade(
     model_path,
@@ -62,6 +67,12 @@ def evade(
         model = SQLiGoTWrapper(undirected=False, proportional=True).load(model_path)
     elif model_type == "waf-brain":
         model = WafBrainWrapper(model_path)
+    elif model_type == "modsecurity":
+        try:
+            model = PyModSecurityWrapper(model_path)
+        except:
+            print("ModSecurity wrapper is not installed, see https://github.com/AvalZ/pymodsecurity to install")
+            exit()
     else:
         raise UnknownModelError("Unsupported model type")
 
