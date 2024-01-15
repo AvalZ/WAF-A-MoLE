@@ -79,14 +79,23 @@ def logical_invariant(payload):
 
 def change_tautologies(payload):
 
-    results = list(re.finditer(r'((?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx]))=\1', payload))
+    # results = list(re.finditer(r'((?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx]))=\1', payload))
+    # rules matching numeric tautologies
+    num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(LIKE|like)\s+)\1\b', payload))
+    num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*!=\s*|\s+(NOT LIKE|not like)\s+)(?!\1\b)\d+\b', payload))
+    # rule matching string tautologies
+    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(LIKE|like)\s+)(\'|\")\2\5', payload))
+    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(NOT LIKE|not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\6', payload))
+    results = num_tautologies_pos + num_tautologies_neg + string_tautologies_pos + string_tautologies_neg
     if not results:
         return payload
     candidate = random.choice(results)
 
     replacements = [num_tautology(), string_tautology()]
-
     replacement = random.choice(replacements)
+    while candidate == replacement:
+        replacements = [num_tautology(), string_tautology()]
+        replacement = random.choice(replacements)
 
     new_payload = (
         payload[: candidate.span()[0]] + replacement + payload[candidate.span()[1] :]
@@ -112,7 +121,7 @@ def spaces_to_comments(payload):
     candidate_replacement = random.choice(replacements)
 
     # Apply mutation at one random occurrence in the payload
-    return replace_random(payload, candidate_symbol, candidate_replacement)
+    return replace_random(payload, re.escape(candidate_symbol), candidate_replacement)
 
 
 def spaces_to_whitespaces_alternatives(payload):
@@ -139,7 +148,7 @@ def spaces_to_whitespaces_alternatives(payload):
     candidate_replacement = random.choice(replacements)
 
     # Apply mutation at one random occurrence in the payload
-    return replace_random(payload, candidate_symbol, candidate_replacement)
+    return replace_random(payload, re.escape(candidate_symbol), candidate_replacement)
 
 
 def random_case(payload):
@@ -159,15 +168,16 @@ def comment_rewriting(payload):
 
     if p < 0.5 and ("#" in payload or "-- " in payload):
         return payload + random_string(2)
-    elif p >= 0.5 and ("*/" in payload):
-        return replace_random(payload, "*/", random_string() + "*/")
+    elif p >= 0.5 and re.search(r"/\*[^(/\*|\*/)]*\*/", payload):
+        return replace_random(payload, r"/\*[^(/\*|\*/)]*\*/", "/*" + random_string() + "*/")
     else:
         return payload
 
 
 def swap_int_repr(payload):
 
-    candidates = list(re.finditer(r'(?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx])', payload))
+    # candidates = list(re.finditer(r'(?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx])', payload))
+    candidates = list(re.finditer(r'\b\d+\b', payload))
 
     if not candidates:
         return payload
@@ -191,24 +201,33 @@ def swap_keywords(payload):
 
     symbols = {
         # OR
-        "||": [" OR ", " || "],
-        " || ": [" OR ", "||"],
-        "OR": [" OR ", "||"],
-        "  OR  ": [" OR ", "||", " || "],
+        "||": [" OR ", "OR", " || ", "or", " or "],
+        " || ": [" OR ", " or "],
+        "OR": [" OR ", " || ", "||", "or", " or "],
+        " OR ": [" || ", " or "],
+        "or": [" OR ", "OR", " || ", "||", " or "],
+        " or ": [" OR ", " || "],
         # AND
-        "&&": [" AND ", " && "],
-        " && ": ["AND", " AND ", " && "],
-        "AND": [" AND ", "&&", " && "],
-        "  AND  ": [" AND ", "&&"],
+        "&&": [" AND ", "AND", " && ", "and", " and "],
+        " && ": [" AND ", " and "],
+        "AND": [" AND ", "&&", " && ", "and", " and "],
+        " AND ": [" && ", " and "],
+        "and": [" AND ", "AND", "&&", " && ", " and "],
+        " and ": [" AND ", " && "],
         # Not equals
-        "<>": ["!=", " NOT LIKE "],
-        "!=": [" != ", "<>", " <> ", " NOT LIKE "],
+        "<>": ["!=", " != ", " <> ", " NOT LIKE ", " not like "],
+        "!=": [" != ", "<>", " <> ", " NOT LIKE ", " not like "],
+        " <> ": ["!=", " != ", "<>", " NOT LIKE ", " not like "],
+        " != ": ["!=", "<>", " <> ", " NOT LIKE ", " not like "],
+        " NOT LIKE ": ["!=", " != ", "<>", " <> ", " not like "],
+        " not like ": ["!=", " != ", "<>", " <> ", " NOT LIKE "],
         # Equals
-        " = ": [" LIKE ", "="],
-        "LIKE": [" LIKE ", "="],
+        " = ": [" LIKE ", " like " "="],
+        " LIKE ": [" like ", "=", " = "],
+        " like ": [" LIKE ", "=", " = "]
     }
 
-    symbols_in_payload = filter_candidates(symbols, payload)
+    symbols_in_payload = [s for s in symbols if re.search(r'\b{}\b'.format(s), payload)]
 
     if not symbols_in_payload:
         return payload
@@ -221,7 +240,8 @@ def swap_keywords(payload):
     candidate_replacement = random.choice(replacements)
 
     # Apply mutation at one random occurrence in the payload
-    return replace_random(payload, candidate_symbol, candidate_replacement)
+    return replace_random(payload, r"\b{}\b".format(candidate_symbol), candidate_replacement)
+
 
 def shuffle_integers(payload):
     """shuffle_integers
@@ -245,8 +265,8 @@ def shuffle_integers(payload):
         # Don't test for = or LIKE in last candidate for out of bounds index
         if (i == len(candidates) - 1):
             continue
-        elif (payload[candidate_pos[1]] == '=' 
-            or payload[candidate_pos[1]+1:candidate_pos[1]+5] == 'LIKE' ):
+        elif (payload[candidate_pos[1]] == '='
+              or payload[candidate_pos[1]+1:candidate_pos[1]+5] == 'LIKE'):
             candidate_pair = [candidates[i].span(), candidates[i+1].span()]
             possible_equal_pairs.append(candidate_pair)
 
@@ -262,7 +282,7 @@ def shuffle_integers(payload):
 
     # Nothing gets replaced if no equal pairs are confirmed
     if (len(definite_equal_pairs) < 1 or not definite_equal_pairs):
-        return payload 
+        return payload
 
     pair_to_replace = random.choice(definite_equal_pairs)
 
@@ -271,12 +291,12 @@ def shuffle_integers(payload):
     replacement_size = pair_to_replace[0][1] - pair_to_replace[0][0]
     replacement = ''
     for i in range(replacement_size):
-        replacement_unit = str(random.choice(single_replacements))    
+        replacement_unit = str(random.choice(single_replacements))
         replacement += replacement_unit
 
     for candidate_pos in pair_to_replace:
         payload = payload[:candidate_pos[0]] + replacement + payload[candidate_pos[1]:]
-    
+
     return payload
 
 

@@ -48,7 +48,7 @@ def replace_random(candidate, sub, wanted):
     type_check(candidate, str, "candidate")
     type_check(sub, str, "sub")
     type_check(wanted, str, "wanted")
-    occurrences = [m.start() for m in re.finditer(re.escape(sub), candidate)]
+    occurrences = [m.start() for m in re.finditer(sub, candidate)]
     if not occurrences:
         return candidate
 
@@ -79,7 +79,7 @@ def filter_candidates(symbols, payload):
     type_check(symbols, dict, "symbols")
     type_check(payload, str, "payload")
 
-    return [s for s in symbols.keys() if s in payload]
+    return [s for s in symbols.keys() if re.search(r'{}'.format(re.escape(s)), payload)]
 
 
 def random_char(spaces=True):
