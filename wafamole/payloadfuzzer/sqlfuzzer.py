@@ -49,7 +49,8 @@ def logical_invariant(payload):
     :param payload:
     """
 
-    pos = re.search("(#|-- )", payload)
+    # pos = re.search("(#|-- )", payload)
+    pos = re.search(r"\b\w+(\s*(=|!=|<>|>|<|>=|<=)\s*|\s+(?i:LIKE|like|NOT LIKE|not like)\s+)\w+\b", payload)
 
     if not pos:
         # No comments found
@@ -78,24 +79,23 @@ def logical_invariant(payload):
 
 
 def change_tautologies(payload):
-
     # results = list(re.finditer(r'((?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx]))=\1', payload))
     # rules matching numeric tautologies
-    num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(LIKE|like)\s+)\1\b', payload))
-    num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*!=\s*|\s+(NOT LIKE|not like)\s+)(?!\1\b)\d+\b', payload))
+    num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:LIKE|like)\s+)\1\b', payload))
+    num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:NOT LIKE|not like)\s+)(?!\1\b)\d+\b', payload))
     # rule matching string tautologies
-    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(LIKE|like)\s+)(\'|\")\2\5', payload))
-    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(NOT LIKE|not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\6', payload))
+    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(?i:LIKE|like)\s+)(\'|\")\2\5', payload))
+    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(?i:NOT LIKE|not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\6', payload))
     results = num_tautologies_pos + num_tautologies_neg + string_tautologies_pos + string_tautologies_neg
     if not results:
         return payload
     candidate = random.choice(results)
 
-    replacements = [num_tautology(), string_tautology()]
-    replacement = random.choice(replacements)
-    while candidate == replacement:
+    while True:
         replacements = [num_tautology(), string_tautology()]
         replacement = random.choice(replacements)
+        if candidate != replacement:
+            break
 
     new_payload = (
         payload[: candidate.span()[0]] + replacement + payload[candidate.span()[1] :]
@@ -190,6 +190,9 @@ def swap_int_repr(payload):
         hex(int(candidate)),
         "(SELECT {})".format(candidate),
         # "({})".format(candidate),
+        # "OCT({})".format(int(candidate)),
+        # "HEX({})".format(int(candidate)),
+        # "BIN({})".format(int(candidate))
     ]
 
     replacement = random.choice(replacements)
