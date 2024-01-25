@@ -56,7 +56,8 @@ def replace_random(candidate, sub, wanted):
 
     before = candidate[:pos]
     after = candidate[pos:]
-    after = after.replace(sub, wanted, 1)
+    # after = after.replace(sub, wanted, 1)
+    after = re.sub(sub, wanted, after, 1)
 
     result = before + after
     return result

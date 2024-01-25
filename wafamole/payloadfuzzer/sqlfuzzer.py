@@ -204,46 +204,47 @@ def swap_keywords(payload):
 
     symbols = {
         # OR
-        "||": [" OR ", "OR", " || ", "or", " or "],
-        " || ": [" OR ", " or "],
-        "OR": [" OR ", " || ", "||", "or", " or "],
-        " OR ": [" || ", " or "],
-        "or": [" OR ", "OR", " || ", "||", " or "],
-        " or ": [" OR ", " || "],
+        "||": [" OR ", " or "],
+        "OR": ["||", "or"],
+        "or": ["OR", "||"],
         # AND
-        "&&": [" AND ", "AND", " && ", "and", " and "],
-        " && ": [" AND ", " and "],
-        "AND": [" AND ", "&&", " && ", "and", " and "],
-        " AND ": [" && ", " and "],
-        "and": [" AND ", "AND", "&&", " && ", " and "],
-        " and ": [" AND ", " && "],
+        "&&": [" AND ", " and "],
+        "AND": ["&&", "and"],
+        "and": ["AND", "&&"],
         # Not equals
-        "<>": ["!=", " != ", " <> ", " NOT LIKE ", " not like "],
-        "!=": [" != ", "<>", " <> ", " NOT LIKE ", " not like "],
-        " <> ": ["!=", " != ", "<>", " NOT LIKE ", " not like "],
-        " != ": ["!=", "<>", " <> ", " NOT LIKE ", " not like "],
-        " NOT LIKE ": ["!=", " != ", "<>", " <> ", " not like "],
-        " not like ": ["!=", " != ", "<>", " <> ", " NOT LIKE "],
+        "<>": ["!=", " NOT LIKE ", " not like "],
+        "!=": ["<>", " NOT LIKE ", " not like "],
+        "NOT LIKE": ["!=", "<>", "not like"],
+        "not like": ["!=", "<>", "NOT LIKE"],
         # Equals
-        " = ": [" LIKE ", " like " "="],
-        " LIKE ": [" like ", "=", " = "],
-        " like ": [" LIKE ", "=", " = "]
+        "=": [" LIKE ", " like "],
+        "LIKE": ["like", "="],
+        "like": ["LIKE", "="]
     }
 
-    symbols_in_payload = [s for s in symbols if re.search(r'\b{}\b'.format(s), payload)]
+    # symbols_in_payload = [s for s in symbols if re.search(r'{}'.format(s), payload)]
+    symbols_in_payload = []
+    for symbol in symbols:
+        if symbol in ["OR", "or", "AND", "and", "LIKE", "like", "NOT LIKE", "not like"]:
+            re_pattern = r'\b{}\b'.format(symbol.replace(" ", "\s+"))
+        else:
+            re_pattern = r"{}".format(re.escape(symbol))
+       
+        if re.search(re_pattern, payload):
+            symbols_in_payload.append((re_pattern, symbol))
 
     if not symbols_in_payload:
         return payload
 
     # Randomly choose symbol
-    candidate_symbol = random.choice(symbols_in_payload)
+    re_pattern, candidate_symbol = random.choice(symbols_in_payload)
     # Check for possible replacements
     replacements = symbols[candidate_symbol]
     # Choose one replacement randomly
     candidate_replacement = random.choice(replacements)
 
     # Apply mutation at one random occurrence in the payload
-    return replace_random(payload, r"\b{}\b".format(candidate_symbol), candidate_replacement)
+    return replace_random(payload, re_pattern, candidate_replacement)
 
 
 def shuffle_integers(payload):
