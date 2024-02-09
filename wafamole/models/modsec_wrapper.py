@@ -8,12 +8,11 @@ from ModSecurity import LogProperty
 
 from wafamole.models import Model
 
-from functools import partial
-
-import re
+import os
 from pathlib import Path
 from urllib.parse import urlparse, urlencode
 from enum import Enum
+
 
 class Severity(Enum):
   def __new__(cls, *args, **kwds):
@@ -34,37 +33,16 @@ class Severity(Enum):
   INFO      = 6, 0 # not used in CRS
   DEBUG     = 7, 0 # not used in CRS
 
-def get_paranoia_level(rule):
-    return next((int(tag.split('/')[1]) for tag in rule.m_tags if 'paranoia-level' in tag), 1)
-
-def at_least_paranoia_level(rule, paranoia_level=1):
-    if not any(paranoia_tag in rule.tags for paranoia_tag in PARANOIA_TAGS):
-        rule_paranoia = 1
-
-    for tag in rule.tags:
-        if 'paranoia-level' in tag:
-            rule_paranoia = int(tag.split("/")[1])
-
-    # filter out rules that have a higher paranoia level than expected
-    return rule_paranoia > paranoia_level
-
-
-
-def overall_score(matched_rules):
-
-    pl2 = partial(at_least_paranoia_level, paranoia_level=2)
-
-    matched_rules = list(filter(pl2, matched_rules))
-
-    return sum(rule.severity for rule in matched_rules)
-
 
 class PyModSecurityWrapper(Model):
 
-    def __init__(self, rules_path):
+    def __init__(self, rules_path, pl):
+        assert os.path.isdir(rules_path)
+        assert isinstance(pl, int) and 1 <= pl <= 4
+
         self.rules_path = Path(rules_path)
         self.modsec = ModSecurity()
-        self.paranoia_level = 4
+        self.paranoia_level = pl
 
         self.rules = RulesSet()
 
@@ -75,15 +53,16 @@ class PyModSecurityWrapper(Model):
             else:
                 raise FileNotFoundError(f"{rule} not found in Rules path")
 
-
         for rule in sorted((self.rules_path / "rules").glob("*.conf")):
             self.rules.loadFromUri(str(self.rules_path / "rules" / rule))
 
         self.modsec.setServerLogCb2(lambda x, y: None, LogProperty.RuleMessageLogProperty)
 
-
     def extract_features(self, value):
         return value
+
+    def _get_paranoia_level(self, rule):
+        return next((int(tag.split('/')[1]) for tag in rule.m_tags if 'paranoia-level' in tag), 1)
 
     # TODO add request body evaluation if needed
     # Currently only supports GET evaluation
@@ -116,5 +95,5 @@ class PyModSecurityWrapper(Model):
         for rule in transaction.m_rulesMessages:
             rule.m_severity = Severity(rule.m_severity).score
 
-        total_score = sum([ rule.m_severity for rule in transaction.m_rulesMessages if get_paranoia_level(rule) <= self.paranoia_level])
+        total_score = sum([ rule.m_severity for rule in transaction.m_rulesMessages if self._get_paranoia_level(rule) <= self.paranoia_level])
         return total_score

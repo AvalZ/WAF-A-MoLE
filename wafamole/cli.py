@@ -1,5 +1,6 @@
 import click
 import pickle
+import re
 from wafamole.evasion import EvasionEngine
 from wafamole.evasion.random import RandomEvasionEngine
 from wafamole.exceptions.models_exceptions import UnknownModelError
@@ -67,9 +68,10 @@ def evade(
         model = SQLiGoTWrapper(undirected=False, proportional=True).load(model_path)
     elif model_type == "waf-brain":
         model = WafBrainWrapper(model_path)
-    elif model_type == "modsecurity":
+    elif re.match(r"modsecurity_pl[1-4]", model_type):
+        pl = int(model_type[-1])
         try:
-            model = PyModSecurityWrapper(model_path)
+            model = PyModSecurityWrapper(model_path, pl)
         except:
             print("ModSecurity wrapper is not installed, see https://github.com/AvalZ/pymodsecurity to install")
             exit()
