@@ -49,13 +49,20 @@ def logical_invariant(payload):
     :param payload:
     """
 
-    pos = re.search(r"\b\w+(\s*(=|!=|<>|>|<|>=|<=)\s*|\s+(?i:like|not like)\s+)\w+\b", payload)
-
-    if not pos:
-        # No comments found
+    # pos = re.search(r"(\b\d+|(\'|\")([a-zA-Z]{1}[\w#@$]*)\2)(\s*(=|!=|<>|>|<|>=|<=)\s*|\s+(?i:like|not like)\s+)(\d+\b|(\'|\")([a-zA-Z]{1}[\w#@$]*)\2)", payload)
+    # if not pos:
+    #     return payload
+    num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:like)\s+)\1\b', payload))
+    num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(?!\1\b)\d+\b', payload))
+    # rule matching string tautologies
+    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(?i:like)\s+)(\'|\")\2\4', payload))
+    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\5', payload))
+    results = num_tautologies_pos + num_tautologies_neg + string_tautologies_pos + string_tautologies_neg
+    if not results:
         return payload
+    pos = random.choice(results)
 
-    pos = pos.start()
+    pos = pos.end()
 
     replacement = random.choice(
         [
