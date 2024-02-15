@@ -49,7 +49,6 @@ def logical_invariant(payload):
     :param payload:
     """
 
-    # pos = re.search("(#|-- )", payload)
     pos = re.search(r"\b\w+(\s*(=|!=|<>|>|<|>=|<=)\s*|\s+(?i:like|not like)\s+)\w+\b", payload)
 
     if not pos:
@@ -79,13 +78,12 @@ def logical_invariant(payload):
 
 
 def change_tautologies(payload):
-    # results = list(re.finditer(r'((?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx]))=\1', payload))
     # rules matching numeric tautologies
     num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:like)\s+)\1\b', payload))
     num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(?!\1\b)\d+\b', payload))
     # rule matching string tautologies
-    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(?i:like)\s+)(\'|\")\2\5', payload))
-    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\6', payload))
+    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(?i:like)\s+)(\'|\")\2\4', payload))
+    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\5', payload))
     results = num_tautologies_pos + num_tautologies_neg + string_tautologies_pos + string_tautologies_neg
     if not results:
         return payload
@@ -176,7 +174,6 @@ def comment_rewriting(payload):
 
 def swap_int_repr(payload):
 
-    # candidates = list(re.finditer(r'(?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx])', payload))
     candidates = list(re.finditer(r'\b\d+\b', payload))
 
     if not candidates:
@@ -222,7 +219,6 @@ def swap_keywords(payload):
         "like": ["LIKE", "="]
     }
 
-    # symbols_in_payload = [s for s in symbols if re.search(r'{}'.format(s), payload)]
     symbols_in_payload = []
     for symbol in symbols:
         if symbol in ["OR", "or", "AND", "and", "LIKE", "like", "NOT LIKE", "not like"]:
