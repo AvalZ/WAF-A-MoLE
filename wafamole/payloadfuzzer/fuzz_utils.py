@@ -23,11 +23,10 @@ def replace_nth(candidate, sub, wanted, n):
     type_check(sub, str, "sub")
     type_check(wanted, str, "wanted")
     type_check(n, int, "n")
-    where = [m.start() for m in re.finditer(re.escape(sub), candidate)][n - 1]
-    before = candidate[:where]
-    after = candidate[where:]
-    after = after.replace(sub, wanted, 1)
-    result = before + after
+    match = [m for m in re.finditer(re.escape(sub), candidate)][n - 1]
+    before = candidate[:match.start()]
+    after = candidate[match.end():]
+    result = before + wanted + after
     return result
 
 
@@ -48,18 +47,17 @@ def replace_random(candidate, sub, wanted):
     type_check(candidate, str, "candidate")
     type_check(sub, str, "sub")
     type_check(wanted, str, "wanted")
-    occurrences = [m.start() for m in re.finditer(sub, candidate)]
+
+    occurrences = list(re.finditer(sub, candidate))
     if not occurrences:
         return candidate
 
-    pos = random.choice(occurrences)
+    match = random.choice(occurrences)
 
-    before = candidate[:pos]
-    after = candidate[pos:]
-    # after = after.replace(sub, wanted, 1)
-    after = re.sub(sub, wanted, after, 1)
+    before = candidate[:match.start()]
+    after = candidate[match.end():]
+    result = before + wanted + after
 
-    result = before + after
     return result
 
 
@@ -98,9 +96,10 @@ def random_char(spaces=True):
     """
 
     type_check(spaces, bool, "spaces")
-    chars = list(string.printable)
-    chars_no_space = [c for c in chars if c not in string.whitespace]
-    return random.choice(chars if spaces else chars_no_space)
+    chars = string.digits + string.ascii_letters + string.punctuation
+    if spaces:
+        chars += string.whitespace
+    return random.choice(chars)
 
 
 def random_string(max_len=5, spaces=True):
@@ -138,15 +137,15 @@ def string_tautology():
         # Strings - equals
         "'{}'='{}'".format(value_s, value_s),
         "'{}' LIKE '{}'".format(value_s, value_s),
-        '"{}"="{}"'.format(value_s, value_s),
-        '"{}" LIKE "{}"'.format(value_s, value_s),
+        "'{}'='{}'".format(value_s, value_s),
+        "'{}' LIKE '{}'".format(value_s, value_s),
         # Strings - not equal
         "'{}'!='{}'".format(value_s, value_s + random_string(1, spaces=False)),
         "'{}'<>'{}'".format(value_s, value_s + random_string(1, spaces=False)),
         "'{}' NOT LIKE '{}'".format(value_s, value_s + random_string(1, spaces=False)),
-        '"{}"!="{}"'.format(value_s, value_s + random_string(1, spaces=False)),
-        '"{}"<>"{}"'.format(value_s, value_s + random_string(1, spaces=False)),
-        '"{}" NOT LIKE "{}"'.format(value_s, value_s + random_string(1, spaces=False)),
+        "'{}'!='{}'".format(value_s, value_s + random_string(1, spaces=False)),
+        "'{}'<>'{}'".format(value_s, value_s + random_string(1, spaces=False)),
+        "'{}' NOT LIKE '{}'".format(value_s, value_s + random_string(1, spaces=False)),
     ]
 
     return random.choice(tautologies)
@@ -164,15 +163,15 @@ def string_contradiction():
         # Strings - equals
         "'{}'='{}'".format(value_s, value_s + random_string(1, spaces=False)),
         "'{}' LIKE '{}'".format(value_s, value_s + random_string(1, spaces=False)),
-        '"{}"="{}"'.format(value_s, value_s + random_string(1, spaces=False)),
-        '"{}" LIKE "{}"'.format(value_s, value_s + random_string(1, spaces=False)),
+        "'{}'='{}'".format(value_s, value_s + random_string(1, spaces=False)),
+        "'{}' LIKE '{}'".format(value_s, value_s + random_string(1, spaces=False)),
         # Strings - not equal
         "'{}'!='{}'".format(value_s, value_s),
         "'{}'<>'{}'".format(value_s, value_s),
         "'{}' NOT LIKE '{}'".format(value_s, value_s),
-        '"{}"!="{}"'.format(value_s, value_s),
-        '"{}"<>"{}"'.format(value_s, value_s),
-        '"{}" NOT LIKE "{}"'.format(value_s, value_s),
+        "'{}'!='{}'".format(value_s, value_s),
+        "'{}'<>'{}'".format(value_s, value_s),
+        "'{}' NOT LIKE '{}'".format(value_s, value_s),
     ]
 
     return random.choice(contradictions)
