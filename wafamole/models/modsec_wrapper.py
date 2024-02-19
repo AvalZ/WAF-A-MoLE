@@ -8,63 +8,51 @@ from ModSecurity import LogProperty
 
 from wafamole.models import Model
 
-from functools import partial
-
-import re
+import os
 from pathlib import Path
+import re
 from urllib.parse import urlparse, urlencode
 from enum import Enum
 
+
 class Severity(Enum):
-  def __new__(cls, *args, **kwds):
-    value = len(cls.__members__)
-    obj = object.__new__(cls)
-    obj._value_ = value
-    return obj
-  def __init__(self, severity_id, score):
-    self.id = severity_id
-    self.score = score
+    def __new__(cls, *args, **kwds):
+        value = len(cls.__members__)
+        obj = object.__new__(cls)
+        obj._value_ = value
+        return obj
+    def __init__(self, severity_id, score):
+        self.id = severity_id
+        self.score = score
  
-  EMERGENCY = 0, 0 # not used in CRS
-  ALERT     = 1, 0 # not used in CRS
-  CRITICAL  = 2, 5
-  ERROR     = 3, 4
-  WARNING   = 4, 3
-  NOTICE    = 5, 2
-  INFO      = 6, 0 # not used in CRS
-  DEBUG     = 7, 0 # not used in CRS
-
-def get_paranoia_level(rule):
-    return next((int(tag.split('/')[1]) for tag in rule.m_tags if 'paranoia-level' in tag), 1)
-
-def at_least_paranoia_level(rule, paranoia_level=1):
-    if not any(paranoia_tag in rule.tags for paranoia_tag in PARANOIA_TAGS):
-        rule_paranoia = 1
-
-    for tag in rule.tags:
-        if 'paranoia-level' in tag:
-            rule_paranoia = int(tag.split("/")[1])
-
-    # filter out rules that have a higher paranoia level than expected
-    return rule_paranoia > paranoia_level
-
-
-
-def overall_score(matched_rules):
-
-    pl2 = partial(at_least_paranoia_level, paranoia_level=2)
-
-    matched_rules = list(filter(pl2, matched_rules))
-
-    return sum(rule.severity for rule in matched_rules)
+    EMERGENCY = 0, 0 # not used in CRS
+    ALERT     = 1, 0 # not used in CRS
+    CRITICAL  = 2, 5
+    ERROR     = 3, 4
+    WARNING   = 4, 3
+    NOTICE    = 5, 2
+    INFO      = 6, 0 # not used in CRS
+    DEBUG     = 7, 0 # not used in CRS
 
 
 class PyModSecurityWrapper(Model):
 
-    def __init__(self, rules_path):
+    def __init__(self, rules_path, pl):
+        assert os.path.isdir(rules_path)
+        assert isinstance(pl, int) and 1 <= pl <= 4
+
         self.rules_path = Path(rules_path)
         self.modsec = ModSecurity()
-        self.paranoia_level = 4
+        self.paranoia_level = pl
+
+        # Ensure the right PL level is set in the CRS config file.
+        # Here we assume that the PL is explicitely set using the 900000 rule.
+        with open(self.rules_path / 'crs-setup.conf', 'r+') as crs_config_file:
+            file_content = crs_config_file.read()
+            file_content = re.sub(r"setvar:tx.blocking_paranoia_level=\d", "setvar:tx.blocking_paranoia_level={}".format(pl), file_content)
+            crs_config_file.seek(0)
+            crs_config_file.write(file_content)
+            crs_config_file.truncate()
 
         self.rules = RulesSet()
 
@@ -75,15 +63,16 @@ class PyModSecurityWrapper(Model):
             else:
                 raise FileNotFoundError(f"{rule} not found in Rules path")
 
-
         for rule in sorted((self.rules_path / "rules").glob("*.conf")):
             self.rules.loadFromUri(str(self.rules_path / "rules" / rule))
 
         self.modsec.setServerLogCb2(lambda x, y: None, LogProperty.RuleMessageLogProperty)
 
-
     def extract_features(self, value):
         return value
+
+    def _get_paranoia_level(self, rule):
+        return next((int(tag.split('/')[1]) for tag in rule.m_tags if 'paranoia-level' in tag), 1)
 
     # TODO add request body evaluation if needed
     # Currently only supports GET evaluation
@@ -99,7 +88,7 @@ class PyModSecurityWrapper(Model):
         transaction = Transaction(self.modsec, self.rules)
 
         transaction.processURI(full_url, method, "2.0")
-        
+
         # Headers
         headers = {
             "Host": parsed_url.netloc, # Avoid matching rule 920280
@@ -116,5 +105,5 @@ class PyModSecurityWrapper(Model):
         for rule in transaction.m_rulesMessages:
             rule.m_severity = Severity(rule.m_severity).score
 
-        total_score = sum([ rule.m_severity for rule in transaction.m_rulesMessages if get_paranoia_level(rule) <= self.paranoia_level])
+        total_score = sum([ rule.m_severity for rule in transaction.m_rulesMessages if self._get_paranoia_level(rule) <= self.paranoia_level])
         return total_score

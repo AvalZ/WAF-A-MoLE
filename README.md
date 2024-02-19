@@ -129,6 +129,9 @@ The classifiers we used are listed in the table below.
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Proportional | Gaussian SVM |
 | [SQLiGoT](https://www.sciencedirect.com/science/article/pii/S0167404816300451) - Undirected Unproportional | Gaussian SVM |
 
+In addition to ML-based WAF, WAF-a-MoLE supports also rule-based WAFs.
+Specifically, it provides a wrapper for the ModSecurity WAF equipped with the [OWASP Core Rule Set (CRS)](https://coreruleset.org), based on the [pymodsecurity](https://github.com/pymodsecurity/pymodsecurity) project.
+
 #### WAF-BRAIN - Recurrent Neural Newtork
 
 Bypass the pre-trained WAF-Brain classifier using a `admin' OR 1=1#` equivalent.
@@ -203,6 +206,15 @@ Use **DP**, **UP**, **DU**, or **UU** for (respectivly) Directed Proportional, U
 
 ```bash
 wafamole evade --model-type DP wafamole/models/custom/example_models/graph_directed_proportional_sqligot "admin' OR 1=1#"
+```
+
+#### OWASP ModSecurity CRS - Rule-based WAF
+
+Bypass the OWASP ModSecurity CRS using a `admin' OR 1=1#` equivalent.
+The user also need to specify the [Paranoia Level](https://coreruleset.org/docs/concepts/paranoia_levels/) as well as the path to locate the CRS rules (e.g., `/etc/coreruleset`).
+
+```bash
+wafamole evade --model-type modsecurity_pl[1-4] /etc/coreruleset "admin' OR 1=1#"
 ```
 
 **BEFORE LAUNCHING EVALUATION ON SQLiGoT**

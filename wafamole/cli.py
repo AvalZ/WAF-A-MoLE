@@ -1,5 +1,6 @@
 import click
 import pickle
+import re
 from wafamole.evasion import EvasionEngine
 from wafamole.evasion.random import RandomEvasionEngine
 from wafamole.exceptions.models_exceptions import UnknownModelError
@@ -19,13 +20,13 @@ def wafamole():
 @click.option("--model-type", "-T", default="token", help="Type of classifier to load")
 @click.option("--timeout", "-t", default=14400, help="Timeout when evading the model")
 @click.option(
-    "--max-rounds", "-r", default=1000, help="Maximum number of fuzzing rounds"
+    "--max-rounds", "-r", default=1000, help="Maximum number of fuzzing rounds. Default: 1000"
 )
 @click.option(
     "--round-size",
     "-s",
     default=20,
-    help="Fuzzing step size for each round (parallel fuzzing steps)",
+    help="Fuzzing step size for each round (parallel fuzzing steps). Default: 20",
 )
 @click.option(
     "--threshold", default=0.5, help="Classification threshold of the target WAF [0.5]"
@@ -67,10 +68,11 @@ def evade(
         model = SQLiGoTWrapper(undirected=False, proportional=True).load(model_path)
     elif model_type == "waf-brain":
         model = WafBrainWrapper(model_path)
-    elif model_type == "modsecurity":
+    elif re.match(r"modsecurity_pl[1-4]", model_type):
+        pl = int(model_type[-1])
         try:
-            model = PyModSecurityWrapper(model_path)
-        except:
+            model = PyModSecurityWrapper(model_path, pl)
+        except Exception:
             print("ModSecurity wrapper is not installed, see https://github.com/AvalZ/pymodsecurity to install")
             exit()
     else:
