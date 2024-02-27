@@ -49,9 +49,7 @@ def logical_invariant(payload):
     :param payload:
     """
 
-    # pos = re.search(r"(\b\d+|(\'|\")([a-zA-Z]{1}[\w#@$]*)\2)(\s*(=|!=|<>|>|<|>=|<=)\s*|\s+(?i:like|not like)\s+)(\d+\b|(\'|\")([a-zA-Z]{1}[\w#@$]*)\2)", payload)
-    # if not pos:
-    #     return payload
+    # rule matching numeric tautologies
     num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:like)\s+)\1\b', payload))
     num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(?!\1\b)\d+\b', payload))
     # rule matching string tautologies
