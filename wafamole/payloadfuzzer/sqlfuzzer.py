@@ -232,12 +232,12 @@ def swap_keywords(payload):
         # Not equals
         "<>": ["!=", " NOT LIKE ", " not like "],
         "!=": ["<>", " NOT LIKE ", " not like "],
-        "NOT LIKE": ["!=", "<>", "not like"],
-        "not like": ["!=", "<>", "NOT LIKE"],
+        "NOT LIKE": ["not like"],
+        "not like": ["NOT LIKE"],
         # Equals
         "=": [" LIKE ", " like "],
-        "LIKE": ["like", "="],
-        "like": ["LIKE", "="]
+        "LIKE": ["like"],
+        "like": ["LIKE"]
     }
 
     # Use sqlparse to tokenize the payload in order to better match keywords,
