@@ -157,7 +157,13 @@ def spaces_to_whitespaces_alternatives(payload):
 def random_case(payload):
 
     tokens = []
-    for t in sqlparse.parse(payload):
+    # Check if the payload is correctly parsed (safety check).
+    try:
+        parsed_payload = sqlparse.parse(payload)
+    except Exception:
+        # Just return the input payload if it cannot be parsed to avoid stopping the fuzzing
+        return payload
+    for t in parsed_payload:
         tokens.extend(list(t.flatten()))
 
     sql_keywords = set(sqlparse.keywords.KEYWORDS_COMMON.keys())
@@ -237,7 +243,13 @@ def swap_keywords(payload):
     # Use sqlparse to tokenize the payload in order to better match keywords,
     # even when they are composed by multiple keywords such as "NOT LIKE"
     tokens = []
-    for t in sqlparse.parse(payload):
+    # Check if the payload is correctly parsed (safety check).
+    try:
+        parsed_payload = sqlparse.parse(payload)
+    except Exception:
+        # Just return the input payload if it cannot be parsed to avoid stopping the fuzzing
+        return payload
+    for t in parsed_payload:
         tokens.extend(list(t.flatten()))
 
     indices = [idx for idx, token in enumerate(tokens) if token.value in replacements]
