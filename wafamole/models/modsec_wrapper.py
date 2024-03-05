@@ -80,7 +80,7 @@ class PyModSecurityWrapper(Model):
     def classify(self, value):
 
         method = "GET"
-        base_uri = "http://www.modsecurity.org/test",
+        base_uri = "http://www.modsecurity.org/test"
         encoded_query = urlencode({'q': value})
         full_url = f"{base_uri}?{encoded_query}"
         parsed_url = urlparse(full_url)

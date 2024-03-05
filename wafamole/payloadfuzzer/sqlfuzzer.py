@@ -2,7 +2,7 @@
 
 import random
 import re
-import string
+import sqlparse
 from wafamole.payloadfuzzer.fuzz_utils import (
     replace_random,
     filter_candidates,
@@ -49,14 +49,18 @@ def logical_invariant(payload):
     :param payload:
     """
 
-    # pos = re.search("(#|-- )", payload)
-    pos = re.search(r"\b\w+(\s*(=|!=|<>|>|<|>=|<=)\s*|\s+(?i:like|not like)\s+)\w+\b", payload)
-
-    if not pos:
-        # No comments found
+    # rule matching numeric tautologies
+    num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:like)\s+)\1\b', payload))
+    num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(?!\1\b)\d+\b', payload))
+    # rule matching string tautologies
+    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(?i:like)\s+)(\'|\")\2\4', payload))
+    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\5', payload))
+    results = num_tautologies_pos + num_tautologies_neg + string_tautologies_pos + string_tautologies_neg
+    if not results:
         return payload
+    candidate = random.choice(results)
 
-    pos = pos.start()
+    pos = candidate.end()
 
     replacement = random.choice(
         [
@@ -79,13 +83,12 @@ def logical_invariant(payload):
 
 
 def change_tautologies(payload):
-    # results = list(re.finditer(r'((?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx]))=\1', payload))
     # rules matching numeric tautologies
     num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:like)\s+)\1\b', payload))
     num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(?!\1\b)\d+\b', payload))
     # rule matching string tautologies
-    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(?i:like)\s+)(\'|\")\2\5', payload))
-    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\6', payload))
+    string_tautologies_pos = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*=\s*|\s+(?i:like)\s+)(\'|\")\2\4', payload))
+    string_tautologies_neg = list(re.finditer(r'(\'|\")([a-zA-Z]{1}[\w#@$]*)\1(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(\'|\")(?!\2)([a-zA-Z]{1}[\w#@$]*)\5', payload))
     results = num_tautologies_pos + num_tautologies_neg + string_tautologies_pos + string_tautologies_neg
     if not results:
         return payload
@@ -152,12 +155,28 @@ def spaces_to_whitespaces_alternatives(payload):
 
 
 def random_case(payload):
-    new_payload = []
 
-    for c in payload:
-        if random.random() > 0.5:
-            c = c.swapcase()
-        new_payload.append(c)
+    tokens = []
+    # Check if the payload is correctly parsed (safety check).
+    try:
+        parsed_payload = sqlparse.parse(payload)
+    except Exception:
+        # Just return the input payload if it cannot be parsed to avoid stopping the fuzzing
+        return payload
+    for t in parsed_payload:
+        tokens.extend(list(t.flatten()))
+
+    sql_keywords = set(sqlparse.keywords.KEYWORDS_COMMON.keys())
+    # sql_keywords = ' '.join(list(sqlparse.keywords.KEYWORDS_COMMON..keys()) + list(sqlparse.keywords.KEYWORDS.keys()))
+
+    # Make sure case swapping is applied only to SQL tokens
+    new_payload = []
+    for token in tokens:
+        if token.value.upper() in sql_keywords:
+            new_token = ''.join([c.swapcase() if random.random() > 0.5 else c for c in token.value])
+            new_payload.append(new_token)
+        else:
+            new_payload.append(token.value)
 
     return "".join(new_payload)
 
@@ -176,7 +195,6 @@ def comment_rewriting(payload):
 
 def swap_int_repr(payload):
 
-    # candidates = list(re.finditer(r'(?<=[^\'"\d\wx])\d+(?=[^\'"\d\wx])', payload))
     candidates = list(re.finditer(r'\b\d+\b', payload))
 
     if not candidates:
@@ -202,7 +220,7 @@ def swap_int_repr(payload):
 
 def swap_keywords(payload):
 
-    symbols = {
+    replacements = {
         # OR
         "||": [" OR ", " or "],
         "OR": ["||", "or"],
@@ -222,86 +240,26 @@ def swap_keywords(payload):
         "like": ["LIKE", "="]
     }
 
-    # symbols_in_payload = [s for s in symbols if re.search(r'{}'.format(s), payload)]
-    symbols_in_payload = []
-    for symbol in symbols:
-        if symbol in ["OR", "or", "AND", "and", "LIKE", "like", "NOT LIKE", "not like"]:
-            re_pattern = r'\b{}\b'.format(symbol.replace(" ", "\s+"))
-        else:
-            re_pattern = r"{}".format(re.escape(symbol))
-       
-        if re.search(re_pattern, payload):
-            symbols_in_payload.append((re_pattern, symbol))
+    # Use sqlparse to tokenize the payload in order to better match keywords,
+    # even when they are composed by multiple keywords such as "NOT LIKE"
+    tokens = []
+    # Check if the payload is correctly parsed (safety check).
+    try:
+        parsed_payload = sqlparse.parse(payload)
+    except Exception:
+        # Just return the input payload if it cannot be parsed to avoid stopping the fuzzing
+        return payload
+    for t in parsed_payload:
+        tokens.extend(list(t.flatten()))
 
-    if not symbols_in_payload:
+    indices = [idx for idx, token in enumerate(tokens) if token.value in replacements]
+    if not indices:
         return payload
 
-    # Randomly choose symbol
-    re_pattern, candidate_symbol = random.choice(symbols_in_payload)
-    # Check for possible replacements
-    replacements = symbols[candidate_symbol]
-    # Choose one replacement randomly
-    candidate_replacement = random.choice(replacements)
+    target_idx = random.choice(indices)
+    new_payload = "".join([random.choice(replacements[token.value]) if idx == target_idx else token.value for idx, token in enumerate(tokens)])
 
-    # Apply mutation at one random occurrence in the payload
-    return replace_random(payload, re_pattern, candidate_replacement)
-
-
-def shuffle_integers(payload):
-    """shuffle_integers
-
-    Replace number=number or number LIKE number cases with a digit + letter combination of the number's size
-
-    e.g. SELECT admins FROM (SELECT * FROM user WHERE 1782 LIKE 1782) WHERE 999=122
-    could become SELECT admins FROM (SELECT * FROM user WHERE a1H9 LIKE a1H9) WHERE 999=122
-
-    :param payload:
-    """
-
-    candidates = list(re.finditer(r'[0-9]+', payload))
-
-    if not candidates:
-        return payload
-
-    possible_equal_pairs = []
-    for i in range(len(candidates)):
-        candidate_pos = candidates[i].span()
-        # Don't test for = or LIKE in last candidate for out of bounds index
-        if (i == len(candidates) - 1):
-            continue
-        elif (payload[candidate_pos[1]] == '='
-              or payload[candidate_pos[1]+1:candidate_pos[1]+5] == 'LIKE'):
-            candidate_pair = [candidates[i].span(), candidates[i+1].span()]
-            possible_equal_pairs.append(candidate_pair)
-
-    definite_equal_pairs = []
-    for pair in possible_equal_pairs:
-        first_candidate_pos = pair[0]
-        second_candidate_pos = pair[1]
-
-        # Verify that an equal pair of numbers exist
-        if (payload[first_candidate_pos[0]:first_candidate_pos[1]] 
-            == payload[second_candidate_pos[0]:second_candidate_pos[1]]):
-            definite_equal_pairs.append(pair)
-
-    # Nothing gets replaced if no equal pairs are confirmed
-    if (len(definite_equal_pairs) < 1 or not definite_equal_pairs):
-        return payload
-
-    pair_to_replace = random.choice(definite_equal_pairs)
-
-    # Build a digit/letter replacement with the size of the paired numbers
-    single_replacements = list(string.ascii_letters) + list(range(0,10))
-    replacement_size = pair_to_replace[0][1] - pair_to_replace[0][0]
-    replacement = ''
-    for i in range(replacement_size):
-        replacement_unit = str(random.choice(single_replacements))
-        replacement += replacement_unit
-
-    for candidate_pos in pair_to_replace:
-        payload = payload[:candidate_pos[0]] + replacement + payload[candidate_pos[1]:]
-
-    return payload
+    return new_payload
 
 
 class SqlFuzzer(object):
@@ -316,8 +274,7 @@ class SqlFuzzer(object):
         comment_rewriting,
         change_tautologies,
         logical_invariant,
-        reset_inline_comments,
-        shuffle_integers,
+        reset_inline_comments
     ]
 
     def __init__(self, payload):
