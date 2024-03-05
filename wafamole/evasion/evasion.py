@@ -104,7 +104,7 @@ class EvasionEngine(CoreEngine):
 
         print(
             "Reached confidence {}\nwith payload\n{}".format(
-                min_confidence, min_payload
+                min_confidence, repr(min_payload)
             )
         )
 
