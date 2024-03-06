@@ -15,9 +15,11 @@ from wafamole.payloadfuzzer.fuzz_utils import (
 
 
 def reset_inline_comments(payload: str):
-    """Remove randomly chosen multi-line comment content.
+    """
+    Removes a randomly chosen multi-line comment content.
+
     Arguments:
-        payload: query payload string
+        payload: query payload (string)
 
     Returns:
         str: payload modified
@@ -38,17 +40,19 @@ def reset_inline_comments(payload: str):
     return new_payload
 
 
-def logical_invariant(payload):
-    """logical_invariant
-
-    Adds an invariant boolean condition to the payload
-
-    E.g., something OR False
-
-
-    :param payload:
+def logical_invariant(payload: str):
     """
+    Adds an invariant boolean condition to the payload.
 
+    E.g., expression OR False
+    where expression is a numeric or string tautology such as 1=1 or 'x'<>'y'
+
+    Arguments:
+        payload: query payload (string)
+
+    Returns:
+        str: payload modified
+    """
     # rule matching numeric tautologies
     num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:like)\s+)\1\b', payload))
     num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(?!\1\b)\d+\b', payload))
@@ -82,7 +86,16 @@ def logical_invariant(payload):
     return new_payload
 
 
-def change_tautologies(payload):
+def change_tautologies(payload: str):
+    """
+    Replaces a randomly chosen numeric/string tautology with another one.
+
+    Arguments:
+        payload: query payload (string)
+
+    Returns:
+        str: payload modified
+    """
     # rules matching numeric tautologies
     num_tautologies_pos = list(re.finditer(r'\b(\d+)(\s*=\s*|\s+(?i:like)\s+)\1\b', payload))
     num_tautologies_neg = list(re.finditer(r'\b(\d+)(\s*(!=|<>)\s*|\s+(?i:not like)\s+)(?!\1\b)\d+\b', payload))
@@ -107,7 +120,16 @@ def change_tautologies(payload):
     return new_payload
 
 
-def spaces_to_comments(payload):
+def spaces_to_comments(payload: str):
+    """
+    Replaces a randomly chosen space character with a multi-line comment (and vice-versa).
+
+    Arguments:
+        payload: query payload (string)
+
+    Returns:
+        str: payload modified
+    """
     # TODO: make it selectable (can be mixed with other strategies)
     symbols = {" ": ["/**/"], "/**/": [" "]}
 
@@ -127,8 +149,16 @@ def spaces_to_comments(payload):
     return replace_random(payload, re.escape(candidate_symbol), candidate_replacement)
 
 
-def spaces_to_whitespaces_alternatives(payload):
+def spaces_to_whitespaces_alternatives(payload: str):
+    """
+    Replaces a randomly chosen whitespace character with another one.
 
+    Arguments:
+        payload: query payload (string)
+
+    Returns:
+        str: payload modified
+    """
     symbols = {
         " ": ["\t", "\n", "\f", "\v", "\xa0"],
         "\t": [" ", "\n", "\f", "\v", "\xa0"],
@@ -154,8 +184,16 @@ def spaces_to_whitespaces_alternatives(payload):
     return replace_random(payload, re.escape(candidate_symbol), candidate_replacement)
 
 
-def random_case(payload):
+def random_case(payload: str):
+    """
+    Randomly changes the capitalization of the SQL keywords in the input payload.
 
+    Arguments:
+        payload: query payload (string)
+
+    Returns:
+        str: payload modified
+    """
     tokens = []
     # Check if the payload is correctly parsed (safety check).
     try:
@@ -181,8 +219,16 @@ def random_case(payload):
     return "".join(new_payload)
 
 
-def comment_rewriting(payload):
+def comment_rewriting(payload: str):
+    """
+    Changes the content of a randomly chosen in-line or multi-line comment.
+    
+    Arguments:
+        payload: query payload (string)
 
+    Returns:
+        str: payload modified
+    """
     p = random.random()
 
     if p < 0.5 and ("#" in payload or "-- " in payload):
@@ -193,8 +239,16 @@ def comment_rewriting(payload):
         return payload
 
 
-def swap_int_repr(payload):
+def swap_int_repr(payload: str):
+    """
+    Changes the representation of a randomly chosen numerical constant with an equivalent one.
 
+    Arguments:
+        payload: query payload (string)
+
+    Returns:
+        str: payload modified
+    """
     candidates = list(re.finditer(r'\b\d+\b', payload))
 
     if not candidates:
@@ -218,8 +272,16 @@ def swap_int_repr(payload):
     return payload[: candidate_pos[0]] + replacement + payload[candidate_pos[1] :]
 
 
-def swap_keywords(payload):
+def swap_keywords(payload: str):
+    """
+    Replaces a randomly chosen SQL operator with a semantically equivalent one.
 
+    Arguments:
+        payload: query payload (string)
+
+    Returns:
+        str: payload modified
+    """
     replacements = {
         # OR
         "||": [" OR ", " or "],
@@ -232,12 +294,12 @@ def swap_keywords(payload):
         # Not equals
         "<>": ["!=", " NOT LIKE ", " not like "],
         "!=": ["<>", " NOT LIKE ", " not like "],
-        "NOT LIKE": ["!=", "<>", "not like"],
-        "not like": ["!=", "<>", "NOT LIKE"],
+        "NOT LIKE": ["not like"],
+        "not like": ["NOT LIKE"],
         # Equals
         "=": [" LIKE ", " like "],
-        "LIKE": ["like", "="],
-        "like": ["LIKE", "="]
+        "LIKE": ["like"],
+        "like": ["LIKE"]
     }
 
     # Use sqlparse to tokenize the payload in order to better match keywords,
